@@ -97,7 +97,13 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - run: |
+            #- name: print job name windows
+            #if: matrix.build == 'x86_64-windows' 
+            #run: 
+
+      - name: print job name 
+        if: matrix.build != 'x86_64-windows' 
+        run: |
           JOB_NAME="OS ${{ matrix.os }}"
           echo $JOB_NAME
           echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
