@@ -97,7 +97,6 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-      - name: matrix_example
       - run: |
           JOB_NAME="OS ${{ matrix.os }}"
           echo $JOB_NAME
