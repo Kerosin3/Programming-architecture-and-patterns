@@ -120,6 +120,7 @@ jobs:
 
 
   ubuntu_2204_task:
+    needs: windows_runner
     runs-on: ubuntu-22.04
     steps:
       - name: Log levels
