@@ -42,4 +42,4 @@ jobs:
     - shell: cmd
       run: |
         @chcp 65001>nul
-        echo foo=bar >> %GITHUB_OUTPUT%
+        echo "hehe = $SOME_VAR">> %GITHUB_OUTPUT%
