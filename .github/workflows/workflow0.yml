@@ -35,7 +35,7 @@ jobs:
           echo "::error::This is an error"    
       - name: Print variable
         run: |
-          echo "This is your variable ${{ SOME_VAR }}"
+          echo "This is your variable ${{ env.SOME_VAR }}"
   windows_runner:
     runs-on: windows-latest
     steps:
@@ -45,5 +45,5 @@ jobs:
         echo foo=bar >> $GITHUB_OUTPUT
         echo "hello!" 
         echo "hello! again" 
-        echo "hello ${{ SOME_VAR }}"
+        echo "hello ${{ env.SOME_VAR }}"
 
