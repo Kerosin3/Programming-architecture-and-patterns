@@ -45,12 +45,11 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.version }} 
-            #   run: |
-      - name: matrix_example
-        shell: bash
-         run: |
-          echo "echo from ubuntu 2204!"
-          echo "::notice:: ubuntu 2204 tasks finished!"
+            #    - name: matrix_example
+            #shell: bash
+            #run: |
+            #echo "echo from ubuntu 2204!"
+            #echo "::notice:: ubuntu 2204 tasks finished!"
           #echo ${{ steps.jobs.outputs.html_url }}
 
   ubuntu_2204_task:
