@@ -43,4 +43,5 @@ jobs:
       run: |
         @chcp 65001>nul
         echo foo=bar >> %GITHUB_OUTPUT%
-        echo selected color is $SOME_VAR
+        echo "${{ steps.author.outputs.author }}"
+
