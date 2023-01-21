@@ -43,3 +43,4 @@ jobs:
       run: |
         @chcp 65001>nul
         echo "hehe = $SOME_VAR">> %GITHUB_OUTPUT%
+        echo "selected color is $SOME_VAR"
