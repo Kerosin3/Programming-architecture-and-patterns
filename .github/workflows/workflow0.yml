@@ -105,8 +105,8 @@ jobs:
             echo foo=bar >> $GITHUB_OUTPUT
             echo "hello!" 
             echo "tasl variable " 
-            echo "global variable "
-
+            echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
+            echo "JOB NAME:" ${{ env.JOB_NAME }}
       - name: print job name 
         if: matrix.build != 'x86_64-windows' 
         run: |
