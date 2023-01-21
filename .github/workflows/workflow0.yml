@@ -98,16 +98,17 @@ jobs:
           target: ${{ matrix.target }}
           override: true
       - name: matrix_example
-        #  run: |
-        # echo "::notice:: finishing task on"
       - run: |
           JOB_NAME="OS ${{ matrix.os }}"
           echo $JOB_NAME
           echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
-
       - name: Print JOB_NAME
         run: |
           echo "JOB NAME:" ${{ env.JOB_NAME }}
+      - name: finishing rust arch task
+        run: |
+          echo "::notice:: finishing task on"
+
 
 
   ubuntu_2204_task:
