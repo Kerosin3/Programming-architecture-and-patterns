@@ -49,7 +49,7 @@ jobs:
         run: |
           #  echo "echo from ubuntu 2204!"
           #echo "::notice:: ubuntu 2204 tasks finished!"
-          echo matrix example finished=> ${{ steps.jobs.outputs.html_url }}
+          echo "matrix example finished=> ${{ steps.jobs.outputs.html_url }}"
         shell: bash
 
   rust_multi_arch:
