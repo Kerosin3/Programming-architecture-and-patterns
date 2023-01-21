@@ -99,7 +99,6 @@ jobs:
           override: true
       - name: print job name windows
         if: matrix.build == 'x86_64-windows' 
-          shell: cmd
           run: |
             @chcp 65001>nul
             echo foo=bar >> $GITHUB_OUTPUT
