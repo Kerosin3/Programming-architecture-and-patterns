@@ -46,16 +46,19 @@ jobs:
         with:
           node-version: ${{ matrix.version }} 
             #   run: |
-            #echo "echo from ubuntu 2204!"
-            #echo "::notice:: ubuntu 2204 tasks finished!"
-            #echo ${{ steps.jobs.outputs.html_url }}
+      - name: matrix_example
+        shell: bash
+         run: |
+          echo "echo from ubuntu 2204!"
+          echo "::notice:: ubuntu 2204 tasks finished!"
+          #echo ${{ steps.jobs.outputs.html_url }}
 
   ubuntu_2204_task:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - shell: bash 
-        - name: Log levels
+      - name: Log levels
+        shell: bash
          run: |
           echo "echo from ubuntu 2204!"
           echo "::notice:: ubuntu 2204 tasks finished!"
