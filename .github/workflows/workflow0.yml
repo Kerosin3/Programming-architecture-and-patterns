@@ -52,6 +52,7 @@ jobs:
           echo ${{ steps.jobs.outputs.html_url }}
         shell: bash
   rust_multi_arch:
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix: 
