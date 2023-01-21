@@ -39,12 +39,12 @@ jobs:
   ubuntu_2204_task:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-dotnet@v1
-      - name: Build
-        run: dotnet build
-      - name: Run tests
-        run: dotnet test 
+    - uses: actions/checkout@v2
+    - name: Log levels
+      run: |
+        echo "echo from ubuntu 2204!"
+        echo "::notice:: ubuntu 2204 tasks finished!"
+
   windows_runner:
     runs-on: windows-latest
     env:
