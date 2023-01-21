@@ -108,7 +108,7 @@ jobs:
           echo $JOB_NAME
           echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
           echo "JOB NAME:" ${{ env.JOB_NAME }}
-          echo "::notice:: finishing task on"
+          echo "::notice:: finishing task on ${{ env.JOB_NAME }}"
 
 
 
