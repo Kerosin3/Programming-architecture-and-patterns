@@ -47,10 +47,11 @@ jobs:
           node-version: ${{ matrix.version }} 
       - name: matrix_example
         run: |
-          echo "echo from ubuntu 2204!"
-          echo "::notice:: ubuntu 2204 tasks finished!"
-          echo ${{ steps.jobs.outputs.html_url }}
+          #  echo "echo from ubuntu 2204!"
+          #echo "::notice:: ubuntu 2204 tasks finished!"
+          echo matrix example finished=> ${{ steps.jobs.outputs.html_url }}
         shell: bash
+
   rust_multi_arch:
     name: OS ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -113,7 +114,7 @@ jobs:
           JOB_NAME="OS ${{ matrix.os }}"
           echo $JOB_NAME
           echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
-          echo "JOB NAME:" ${{ env.JOB_NAME }}
+          #echo "JOB NAME:" ${{ env.JOB_NAME }}
           echo "::notice:: finishing task on ${{ env.JOB_NAME }}"
 
 
@@ -136,7 +137,8 @@ jobs:
       run: |
         @chcp 65001>nul
         echo foo=bar >> $GITHUB_OUTPUT
-        echo "hello!" 
-        echo "tasl variable ${{ env.win_var1 }}" 
-        echo "global variable ${{ env.SOME_VAR }} "
+        echo "hello from windows job!" 
+        echo "windows prints its env value ${{ env.win_var1 }}" 
+        echo "windows global variable ${{ env.SOME_VAR }} "
+        echo "::notice:: windows task finished!"
 
