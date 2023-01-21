@@ -63,13 +63,19 @@ jobs:
           rust: nightly
           target: x86_64-unknown-linux-gnu
           cross: false
+        - build: x86_64-linux
+          os: ubuntu-22.04
+          rust: nightly
+          target: x86_64-unknown-linux-gnu
+          cross: false
         - build: x86_64-macos
           os: macos-latest
           rust: nightly
           target: x86_64-apple-darwin
           cross: false
         - build: x86_64-windows
-          os: windows-2019
+          os: windows-latest
+            #os: windows-2019
           rust: nightly
           target: x86_64-pc-windows-msvc
           cross: false
@@ -90,6 +96,10 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
+      - name: matrix_example
+        run: |
+          echo "::notice:: finishing task on"
+
 
   ubuntu_2204_task:
     runs-on: ubuntu-22.04
