@@ -39,7 +39,7 @@ jobs:
   windows_runner:
     runs-on: windows-latest
     env:
-      win_var1 = "windows_variables"
+      win_var1: "windows_variables"
     steps:
     - shell: cmd
       run: |
