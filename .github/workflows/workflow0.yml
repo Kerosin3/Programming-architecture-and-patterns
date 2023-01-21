@@ -12,7 +12,7 @@ jobs:
   test-simple-tasks:
     runs-on: ubuntu-latest
     env:
-      MY_VARIABLE: "alex variable"
+      task_variable: "alex variable"
     steps:
       - uses: actions/checkout@v3
       - name: Get author name
@@ -30,7 +30,7 @@ jobs:
         run: |
           #       echo "::debug::This is a debug message"
           echo "::notice::This is an info message"
-          echo "::notice::Printin env variable: $MY_VARIABLE"
+          echo "::notice::Printin env variable: ${{ env.task_variable }}"
           echo "::warning::This is a warning"
           echo "::error::This is an error"    
       - name: Print variable
@@ -38,12 +38,14 @@ jobs:
           echo "This is your variable $SOME_VAR"
   windows_runner:
     runs-on: windows-latest
+    env:
+      win_var1 = "windows_variables"
     steps:
     - shell: cmd
       run: |
         @chcp 65001>nul
         echo foo=bar >> $GITHUB_OUTPUT
         echo "hello!" 
-        echo "hello! again" 
-        echo "hello ${{ env.SOME_VAR }}"
+        echo "hello! again ${{ env.win_var1 }}" 
+        echo "hello $SOME_VAR"
 
