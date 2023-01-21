@@ -11,6 +11,8 @@ env:
 jobs:
   test-simple-tasks:
     runs-on: ubuntu-latest
+    env:
+      MY_VARIABLE: "alex variable"
     steps:
       - uses: actions/checkout@v3
       - name: Get author name
@@ -26,8 +28,10 @@ jobs:
           AUTHOR_NAME: ${{ steps.author.outputs.author }}
       - name: Log levels
         run: |
+          echo "::group:: Some title"
           echo "::debug::This is a debug message"
           echo "::notice::This is an info message"
+          echo "::notice::Printin env variable: $MY_VARIABLE"
           echo "::warning::This is a warning"
           echo "::error::This is an error"    
       - name: Print variable
