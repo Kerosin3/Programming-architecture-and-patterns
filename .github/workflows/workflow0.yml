@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Log levels
-        shell: bash
+        #shell: bash
          run: |
           echo "echo from ubuntu 2204!"
           echo "::notice:: ubuntu 2204 tasks finished!"
