@@ -36,10 +36,10 @@ jobs:
       - name: Print variable
         run: |
           echo "This is your variable $SOME_VAR"
-  run_oon_windows:
+  windows_runner:
     runs-on: windows-latest
     steps:
     - shell: cmd
       run: |
         @chcp 65001>nul
-        echo "heloo there" >> %GITHUB_OUTPUT%
+        echo foo=bar >> %GITHUB_OUTPUT%
