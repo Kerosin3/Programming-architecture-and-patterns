@@ -55,10 +55,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - shell: bash 
-        #- name: Log levels
-        # run: |
-        #  echo "echo from ubuntu 2204!"
-        #  echo "::notice:: ubuntu 2204 tasks finished!"
+        - name: Log levels
+         run: |
+          echo "echo from ubuntu 2204!"
+          echo "::notice:: ubuntu 2204 tasks finished!"
 
   windows_runner:
     runs-on: windows-latest
