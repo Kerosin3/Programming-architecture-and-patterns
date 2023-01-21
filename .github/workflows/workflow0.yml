@@ -18,8 +18,6 @@ jobs:
       - name: Get author name
         id: author
         run: echo "author=$(git show -s --format=%an)" >> $GITHUB_OUTPUT
-          #        run: echo "{name}={value} >>GITHUB_OUTPUT::$(git show -s --format=%an)"
-          #run: echo "::set-output name=author::$(git show -s --format=%an)"
       - name: Print author name
         run: echo "${{ steps.author.outputs.author }}"
       - name: Print author name with an environment variable
@@ -36,10 +34,21 @@ jobs:
       - name: Print variable
         run: |
           echo "This is your variable $SOME_VAR"
+
+  example_matrix:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+        version: [10, 12, 14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.version }} 
   ubuntu_2204_task:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Log levels
       run: |
         echo "echo from ubuntu 2204!"
@@ -50,6 +59,7 @@ jobs:
     env:
       win_var1: "windows_variables"
     steps:
+    - uses: actions/checkout@v3
     - shell: cmd
       run: |
         @chcp 65001>nul
