@@ -16,8 +16,8 @@ jobs:
       - name: Get author name
         id: author
         run: echo "author=$(git show -s --format=%an)" >> $GITHUB_OUTPUT
-          #run: echo "{name}={value} >>GITHUB_OUTPUT::$(git show -s --format=%an)"
-       # run: echo "::set-output name=author::$(git show -s --format=%an)"
+        run: echo "{name}={value} >>GITHUB_OUTPUT::$(git show -s --format=%an)"
+        run: echo "::set-output name=author::$(git show -s --format=%an)"
       - name: Print author name
         run: echo "${{ steps.author.outputs.author }}"
       - name: Print author name with an environment variable
