@@ -36,6 +36,15 @@ jobs:
       - name: Print variable
         run: |
           echo "This is your variable $SOME_VAR"
+  ubuntu_2204_task:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+      - name: Build
+        run: dotnet build
+      - name: Run tests
+        run: dotnet test 
   windows_runner:
     runs-on: windows-latest
     env:
@@ -46,6 +55,6 @@ jobs:
         @chcp 65001>nul
         echo foo=bar >> $GITHUB_OUTPUT
         echo "hello!" 
-        echo "hello! again ${{ env.win_var1 }}" 
-        echo "hello ${{ env.SOME_VAR }} "
+        echo "tasl variable ${{ env.win_var1 }}" 
+        echo "global variable ${{ env.SOME_VAR }} "
 
