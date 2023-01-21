@@ -1,0 +1,35 @@
+name: Example workflow
+
+on:
+  push:
+    branches:
+      - main
+    
+env:
+  SOME_VAR: ok
+
+jobs:
+  test-simple-tasks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get author name
+        id: author
+        run: echo "author=$(git show -s --format=%an)" >> $GITHUB_OUTPUT
+          #run: echo "{name}={value} >>GITHUB_OUTPUT::$(git show -s --format=%an)"
+       # run: echo "::set-output name=author::$(git show -s --format=%an)"
+      - name: Print author name
+        run: echo "${{ steps.author.outputs.author }}"
+      - name: Print author name with an environment variable
+        run: echo $AUTHOR_NAME
+        env:
+          AUTHOR_NAME: ${{ steps.author.outputs.author }}
+      - name: Log levels
+        run: |
+          echo "::debug::This is a debug message"
+          echo "This is an info message"
+          echo "::warning::This is a warning"
+          echo "::error::This is an error"    
+      - name: Print variable
+        run: |
+          echo "This is your variable $SOME_VAR"

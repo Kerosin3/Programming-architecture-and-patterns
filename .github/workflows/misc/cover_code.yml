@@ -1,0 +1,65 @@
+on:
+  workflow_run:
+    workflows: ["check rust project"]
+    branches: [main]
+    types: 
+      - completed
+name: coverage-report
+env:
+  project_to_test: "./tests/test1"
+  project_to_test2: "./smart_house_prj"
+
+
+jobs:
+  coverage:
+    name: Coverage
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        rust: [nightly]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: llvm-tools-preview
+
+      - uses: Swatinem/rust-cache@v1
+
+      - name: Download grcov
+        run: |
+          mkdir -p "${HOME}/.local/bin"
+          curl -sL https://github.com/mozilla/grcov/releases/download/v0.8.10/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C "${HOME}/.local/bin"
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Run xtask coverage test1
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+            #command: run
+            #args: coverage 
+            #args: -p xtask --manifest-path tests/test1/Cargo.toml
+          args: --package xtask --manifest-path ${{env.project_to_test}}/Cargo.toml coverage
+
+      - name: Run xtask coverage test2
+        uses: actions-rs/cargo@v1
+        with:
+          command: run
+            #command: run
+            #args: coverage 
+            #args: -p xtask --manifest-path tests/test1/Cargo.toml
+          args: --package xtask --manifest-path ${{env.project_to_test2}}/Cargo.toml coverage
+
+
+      - name: Upload to codecov.io
+        uses: codecov/codecov-action@v3
+        with:
+          #files: ${{ env.project_to_test }}coverage/*.lcov
+          files: coverage/*.lcov
+          grcov: true
+            # token: ${{ secrets.YOUR_SECRET_TOKEN }}
