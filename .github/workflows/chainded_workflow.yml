@@ -1,0 +1,27 @@
+name: chained task
+
+# Only trigger, when the build workflow succeeded
+on:
+  workflow_run:
+    workflows: ["Example workflow"]
+    types:
+      - completed
+
+jobs:
+  example_matrix:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
+        version: [10, 12, 14]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.version }} 
+      - name: matrix_example
+        run: |
+          #  echo "echo from ubuntu 2204!"
+          #echo "::notice:: ubuntu 2204 tasks finished!"
+          echo "matrix example finished=> ${{ steps.jobs.outputs.html_url }}"
+        shell: bash
+
