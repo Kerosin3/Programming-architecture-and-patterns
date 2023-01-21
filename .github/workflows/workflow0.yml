@@ -35,7 +35,7 @@ jobs:
           echo "::error::This is an error"    
       - name: Print variable
         run: |
-          echo "This is your variable ${{ env.SOME_VAR }}"
+          echo "This is your variable $SOME_VAR"
   windows_runner:
     runs-on: windows-latest
     steps:
