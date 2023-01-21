@@ -99,14 +99,13 @@ jobs:
           override: true
       - name: print job name windows
         if: matrix.build == 'x86_64-windows' 
-      - shell: cmd
+        shell: cmd
           run: |
           @chcp 65001>nul
           echo foo=bar >> $GITHUB_OUTPUT
           echo "hello!" 
           echo "tasl variable " 
           echo "global variable "
-
 
       - name: print job name 
         if: matrix.build != 'x86_64-windows' 
