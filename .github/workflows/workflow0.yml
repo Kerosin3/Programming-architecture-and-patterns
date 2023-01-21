@@ -45,4 +45,5 @@ jobs:
         echo foo=bar >> $GITHUB_OUTPUT
         echo "hello!" 
         echo "hello! again" 
+        echo "hello $SOME_VAR"
 
