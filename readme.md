@@ -1,1 +1,1 @@
-# Otus RUST course homeworks
+# Otus RUST Architect course homeworks:
