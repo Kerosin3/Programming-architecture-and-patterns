@@ -94,6 +94,12 @@ jobs:
         with:
           command: clippy
           args: ${{ env.package_to_test }} -- -D warnings
+      - name: rust cargo test
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: test
+          args: ${{ env.package_to_test }}
 
       - name: print job name windows
         if: matrix.build == 'x86_64-windows' 
