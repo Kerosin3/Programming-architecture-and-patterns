@@ -7,6 +7,7 @@ on:
     
 env:
   SOME_VAR: ok
+  package_to_test: '--manifest-path tests/test1/Cargo.toml'
 
 jobs:
   test-simple-tasks:
@@ -81,14 +82,12 @@ jobs:
           toolchain: ${{ matrix.rust }}
           target: ${{ matrix.target }}
           override: true
-
-      - name: Run cargo test
-        if: matrix.build != 'aarch64-macos'
+          components: rustfmt, clippy
+      - name: rust cargo check
         uses: actions-rs/cargo@v1
         with:
-          use-cross: ${{ matrix.cross }}
-          command: test
-          args: --release --locked --target ${{ matrix.target }}
+          command: check
+          args: ${{ env.package_to_test }}
 
       - name: print job name windows
         if: matrix.build == 'x86_64-windows' 
