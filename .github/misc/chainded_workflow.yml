@@ -3,7 +3,7 @@ name: chained task
 # Only trigger, when the build workflow succeeded
 on:
   workflow_run:
-    workflows: ["Example workflow"]
+    workflows: ["rust nightly crosscompile test"]
     types:
       - completed
 

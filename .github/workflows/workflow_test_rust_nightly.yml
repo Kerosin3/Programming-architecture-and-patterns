@@ -1,4 +1,4 @@
-name: Example workflow
+name: rust nightly crosscompile test
 
 on:
   push:
@@ -118,7 +118,6 @@ jobs:
           JOB_NAME="OS ${{ matrix.os }}"
           echo $JOB_NAME
           echo "JOB_NAME=$JOB_NAME" >> $GITHUB_ENV
-          #echo "JOB NAME:" ${{ env.JOB_NAME }}
           echo "::notice:: finishing task on ${{ env.JOB_NAME }}"
 
 
