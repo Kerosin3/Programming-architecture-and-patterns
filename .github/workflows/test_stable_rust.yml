@@ -77,7 +77,7 @@ jobs:
         with:
           command: clippy
           args: ${{ env.package_to_test }} --all --all-features  --tests -- -D warnings
-  Build:
+  build:
     name: rust cargo build debug
     runs-on: ubuntu-latest
     steps:
