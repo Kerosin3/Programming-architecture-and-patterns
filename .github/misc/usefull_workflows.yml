@@ -1,0 +1,61 @@
+name: some workwlows
+
+on:
+  push:
+    branches:
+      - main
+    
+env:
+  SOME_VAR: ok
+
+jobs:
+  test-simple-tasks:
+    runs-on: ubuntu-latest
+    env:
+      task_variable: "alex variable"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Get author name
+        id: author
+        run: echo "author=$(git show -s --format=%an)" >> $GITHUB_OUTPUT
+      - name: Print author name
+        run: echo "${{ steps.author.outputs.author }}"
+      - name: Print author name with an environment variable
+        run: echo $AUTHOR_NAME
+        env:
+          AUTHOR_NAME: ${{ steps.author.outputs.author }}
+      - name: Log levels
+        run: |
+          #       echo "::debug::This is a debug message"
+          echo "::notice::This is an info message"
+          echo "::notice::Printin env variable: ${{ env.task_variable }}"
+          echo "::warning::This is a warning"
+          echo "::error::This is an error"    
+      - name: Print variable
+        run: |
+          echo "This is your variable $SOME_VAR"
+
+  ubuntu_2204_task:
+    needs: windows_runner
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Log levels
+        run: |
+         echo "echo from ubuntu 2204!"
+         echo "::notice:: ubuntu 2204 tasks finished!"
+
+  windows_runner:
+    runs-on: windows-latest
+    env:
+      win_var1: "windows_variables"
+    steps:
+    - uses: actions/checkout@v3
+    - shell: cmd
+      run: |
+        @chcp 65001>nul
+        echo foo=bar >> $GITHUB_OUTPUT
+        echo "hello from windows job!" 
+        echo "windows prints its env value ${{ env.win_var1 }}" 
+        echo "windows global variable ${{ env.SOME_VAR }} "
+        echo "::notice:: windows task finished!"
+
