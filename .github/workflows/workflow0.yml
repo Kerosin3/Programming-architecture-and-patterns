@@ -7,7 +7,8 @@ on:
     
 env:
   SOME_VAR: ok
-  package_to_test: '--manifest-path tests/test1/Cargo.toml'
+  package_to_test: '--manifest-path Cargo.toml'
+    #package_to_test: '--manifest-path tests/test1/Cargo.toml'
 
 jobs:
   test-simple-tasks:

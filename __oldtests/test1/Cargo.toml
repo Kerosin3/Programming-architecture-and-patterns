@@ -1,5 +1,6 @@
 [workspace]
 members=[
 #"xtask",
-"test_inner"
+"test_inner",
+"test_inner2"
 ]
