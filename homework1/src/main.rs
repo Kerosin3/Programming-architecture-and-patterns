@@ -11,14 +11,14 @@ mod testing_example {
     use super::*;
     #[test]
     fn t1() {
-        assert_eq!(test_me(), true);
+        assert!(test_me());
     }
     #[test]
     fn t2() {
-        assert_eq!(test_me(), true);
+        assert!(test_me());
     }
     #[test]
     fn t3() {
-        assert_eq!(test_me(), true);
+        assert!(test_me());
     }
 }
