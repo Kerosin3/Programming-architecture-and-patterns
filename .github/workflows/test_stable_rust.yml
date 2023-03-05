@@ -81,12 +81,12 @@ jobs:
     name: rust cargo build debug
     runs-on: ubuntu-latest
     steps:
-      -uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: build
           args: ${{ env.package_to_test }} --all-targets
-      -uses: actions-rs/cargo@v1
+      - uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: build
