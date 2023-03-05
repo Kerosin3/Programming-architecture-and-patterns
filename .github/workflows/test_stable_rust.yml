@@ -9,8 +9,8 @@ on:
 
 env: 
   package_to_test: '--manifest-path Cargo.toml'
-  toolchain: 'nightly' 
-#  toolchain: 'stable'
+    #  toolchain: 'nightly' 
+  toolchain: 'stable'
 jobs:
   check:
     name: Check
@@ -41,7 +41,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          #args: --manifest-path tests/test1/Cargo.toml
           args: ${{ env.package_to_test }}
 
   fmt:
@@ -59,7 +58,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: fmt
-            #args: --manifest-path tests/test1/Cargo.toml --all -- --check
           args: ${{ env.package_to_test }} --all --check
 
   clippy:
@@ -78,6 +76,4 @@ jobs:
         continue-on-error: true
         with:
           command: clippy
-            #args: -- -D warnings
-            #args: --manifest-path tests/test1/Cargo.toml -- -D warnings
           args: ${{ env.package_to_test }} -- -D warnings
