@@ -82,6 +82,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ env.toolchain }}
+          override: true
       - uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
