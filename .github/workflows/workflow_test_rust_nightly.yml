@@ -63,7 +63,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
-          args: ${{ env.package_to_test }}
+          args: ${{ env.package_to_test }} --all-targets
       - name: rust cargo clippy
         uses: actions-rs/cargo@v1
         continue-on-error: true
@@ -77,12 +77,18 @@ jobs:
         with:
           command: test
           args: ${{ env.package_to_test }} --all-targets
-      - name: rust cargo build
+      - name: rust cargo build debug
         uses: actions-rs/cargo@v1
         continue-on-error: false
         with:
           command: build
-          args: ${{ env.package_to_test }}
+          args: ${{ env.package_to_test }} --all-targets
+      - name: rust cargo build release
+        uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: build
+          args: ${{ env.package_to_test }} --all-targets --release
 
       - name: print job name windows
         if: matrix.build == 'x86_64-windows' 

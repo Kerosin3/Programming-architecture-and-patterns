@@ -41,7 +41,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: ${{ env.package_to_test }}
+          args: ${{ env.package_to_test }} --all-targets
 
   fmt:
     name: Rustfmt
@@ -76,4 +76,19 @@ jobs:
         continue-on-error: true
         with:
           command: clippy
-          args: ${{ env.package_to_test }} -- -D warnings
+          args: ${{ env.package_to_test }} --all --all-features  --tests -- -D warnings
+  Build:
+    name: rust cargo build debug
+    runs-on: ubuntu-latest
+    steps:
+      -uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: build
+          args: ${{ env.package_to_test }} --all-targets
+      -uses: actions-rs/cargo@v1
+        continue-on-error: false
+        with:
+          command: build
+          args: ${{ env.package_to_test }} --all-targets --release
+
