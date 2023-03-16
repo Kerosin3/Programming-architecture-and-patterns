@@ -27,8 +27,27 @@ pub fn try_solve_square_root(
     if !coeffA.is_finite() || !coeffB.is_finite() || !coeffC.is_finite() {
         return Err(ErrorSolving::AbnormalCoeffValue);
     }
-    if epsi.is_nan() {
-        return Err(ErrorSolving::WrongEpsilonValue("epsilon is nan".to_owned()));
+    //test epsilon value
+    match epsi {
+        eps if eps.is_infinite() => {
+            return Err(ErrorSolving::WrongEpsilonValue(
+                "epsilon is infinite".to_owned(),
+            ));
+        }
+        eps if eps.is_nan() => {
+            return Err(ErrorSolving::WrongEpsilonValue("epsilon is nan".to_owned()));
+        }
+        eps if eps.is_subnormal() => {
+            return Err(ErrorSolving::WrongEpsilonValue(
+                "epsilon is subnormal".to_owned(),
+            ));
+        }
+        eps if eps.abs() > 0.5_f64 => {
+            return Err(ErrorSolving::WrongEpsilonValue(
+                "abs epsilon value should be <= 0.5".to_owned(),
+            ));
+        }
+        _ => {}
     }
     if abs_diff_eq!(0.0, coeffA, epsilon = epsi) {
         return Err(ErrorSolving::CoeffAValueError);

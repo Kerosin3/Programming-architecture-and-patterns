@@ -69,5 +69,31 @@ mod test1 {
             t1.unwrap_err(),
             ErrorSolving::WrongEpsilonValue("epsilon is nan".to_string())
         );
+        let t2 = try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, f64::NEG_INFINITY);
+        assert_eq!(
+            t2.unwrap_err(),
+            ErrorSolving::WrongEpsilonValue("epsilon is infinite".to_string())
+        );
+        let t3 = try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, f64::INFINITY);
+        assert_eq!(
+            t3.unwrap_err(),
+            ErrorSolving::WrongEpsilonValue("epsilon is infinite".to_string())
+        );
+        let lower_than_min = 1.0e-308_f64;
+        let t3 = try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, lower_than_min);
+        assert_eq!(
+            t3.unwrap_err(),
+            ErrorSolving::WrongEpsilonValue("epsilon is subnormal".to_string())
+        );
+        let t4 = try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, 0.51_f64);
+        assert_eq!(
+            t4.unwrap_err(),
+            ErrorSolving::WrongEpsilonValue("abs epsilon value should be <= 0.5".to_string())
+        );
+        let t5 = try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, -0.51_f64);
+        assert_eq!(
+            t5.unwrap_err(),
+            ErrorSolving::WrongEpsilonValue("abs epsilon value should be <= 0.5".to_string())
+        );
     }
 }
