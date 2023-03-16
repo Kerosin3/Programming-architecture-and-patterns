@@ -24,7 +24,7 @@ pub fn try_solve_square_root(
 ) -> Result<Option<(f64, f64)>, ErrorSolving> {
     let discr = |a: f64, b: f64, c: f64| -> f64 { b.powf(2.0) - (4.0 * a * c) };
     match discr(coeffA, coeffB, coeffC) {
-        rez if rez == 0.0 => Ok(None),
+        rez if rez < 0.0 => Ok(None),
         _ => todo!(),
     }
 }
