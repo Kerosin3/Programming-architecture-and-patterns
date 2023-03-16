@@ -25,4 +25,11 @@ mod test1 {
             Ok(Some((-1.0_f64, -1.0_f64)))
         );
     }
+    #[test]
+    fn test_coeff_a_zero() {
+        assert_eq!(
+            try_solve_square_root(0.0_f64, 0.0_f64, 1.0_f64),
+            Err(ErrorSolving::CoeffAValueError)
+        );
+    }
 }
