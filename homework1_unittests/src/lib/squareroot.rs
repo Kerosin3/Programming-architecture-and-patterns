@@ -27,6 +27,9 @@ pub fn try_solve_square_root(
     if !coeffA.is_finite() || !coeffB.is_finite() || !coeffC.is_finite() {
         return Err(ErrorSolving::AbnormalCoeffValue);
     }
+    if epsi.is_nan() {
+        return Err(ErrorSolving::WrongEpsilonValue("epsilon is nan".to_owned()));
+    }
     if abs_diff_eq!(0.0, coeffA, epsilon = epsi) {
         return Err(ErrorSolving::CoeffAValueError);
     }
@@ -50,4 +53,5 @@ pub fn try_solve_square_root(
 pub enum ErrorSolving {
     CoeffAValueError,
     AbnormalCoeffValue,
+    WrongEpsilonValue(String),
 }

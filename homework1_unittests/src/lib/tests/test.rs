@@ -62,4 +62,12 @@ mod test1 {
             Err(ErrorSolving::AbnormalCoeffValue)
         );
     }
+    #[test]
+    fn test_non_normal_epsilon() {
+        let t1 = try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, f64::NAN);
+        assert_eq!(
+            t1.unwrap_err(),
+            ErrorSolving::WrongEpsilonValue("epsilon is nan".to_string())
+        );
+    }
 }
