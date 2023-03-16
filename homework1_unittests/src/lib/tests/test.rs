@@ -8,4 +8,12 @@ mod test1 {
         // x^2+1 = 0
         assert_eq!(try_solve_square_root(1.0_f64, 0.0_f64, 1.0_f64), Ok(None));
     }
+
+    #[test]
+    fn test_two_roots_rank1() {
+        assert_eq!(
+            try_solve_square_root(1.0_f64, 0.0_f64, -1.0_f64),
+            Ok(Some((1.0_f64, -1.0_f64)))
+        );
+    }
 }
