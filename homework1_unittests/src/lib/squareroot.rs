@@ -33,7 +33,8 @@ pub fn try_solve_square_root(
     match D {
         rez if rez < 0.0 => Ok(None),
         rez if rez > 0.0 => Ok(Some(roots(rez, coeffA, coeffB))),
-        _ => todo!(),
+        rez if rez == 0.0 => Ok(Some(roots(rez, coeffA, coeffB))),
+        _ => todo!(), //Nan
     }
 }
 
