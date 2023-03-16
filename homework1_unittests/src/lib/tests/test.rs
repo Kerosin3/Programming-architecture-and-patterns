@@ -44,4 +44,22 @@ mod test1 {
             Err(ErrorSolving::CoeffAValueError)
         );
     }
+    #[test]
+    fn test_abnormal_values() {
+        let nan = f64::NAN;
+        let _inf = f64::INFINITY;
+        let _ninf = f64::NEG_INFINITY;
+        assert_eq!(
+            try_solve_square_root(nan, 0.0_f64, 1.0_f64, f64::EPSILON),
+            Err(ErrorSolving::AbnormalCoeffValue)
+        );
+        assert_eq!(
+            try_solve_square_root(nan, _inf, 1.0_f64, f64::EPSILON),
+            Err(ErrorSolving::AbnormalCoeffValue)
+        );
+        assert_eq!(
+            try_solve_square_root(nan, _inf, _ninf, f64::EPSILON),
+            Err(ErrorSolving::AbnormalCoeffValue)
+        );
+    }
 }

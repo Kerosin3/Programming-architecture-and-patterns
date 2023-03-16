@@ -24,6 +24,9 @@ pub fn try_solve_square_root(
     coeffC: f64,
     epsi: f64,
 ) -> Result<Option<(f64, f64)>, ErrorSolving> {
+    if !coeffA.is_finite() || !coeffB.is_finite() || !coeffC.is_finite() {
+        return Err(ErrorSolving::AbnormalCoeffValue);
+    }
     if abs_diff_eq!(0.0, coeffA, epsilon = epsi) {
         return Err(ErrorSolving::CoeffAValueError);
     }
@@ -42,8 +45,9 @@ pub fn try_solve_square_root(
         _ => todo!(), //Nan
     }
 }
-
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq)]
 pub enum ErrorSolving {
     CoeffAValueError,
+    AbnormalCoeffValue,
 }
