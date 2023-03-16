@@ -18,9 +18,15 @@ mod test1;
 /// assert!(true);
 /// ```
 #[allow(unused_variables)]
-pub fn try_solve_square_root(arg1: f64, arg2: f64) -> Option<(f64, f64)> {
+pub fn try_solve_square_root(
+    coeffA: f64,
+    coeffB: f64,
+    coeffC: f64,
+) -> Result<Option<(f64, f64)>, ErrorSolving> {
     todo!()
 }
-pub fn test_me() {
-    println!("I am here");
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ErrorSolving {
+    CoeffValueError,
 }
