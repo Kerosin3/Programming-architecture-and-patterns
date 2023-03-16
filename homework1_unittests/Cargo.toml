@@ -10,3 +10,6 @@ path = "src/lib/squareroot.rs"
 [[bin]]
 name = "mybin"
 path = "src/main/main.rs"
+
+[dependencies]
+approx = "0.5.1"
