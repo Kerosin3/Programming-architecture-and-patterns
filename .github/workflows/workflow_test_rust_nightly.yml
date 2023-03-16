@@ -1,9 +1,6 @@
 name: rust nightly crosscompile test
 
-on:
-  push:
-    branches:
-      - main
+on: [push,pull_request]
     
 env:
   SOME_VAR: ok
