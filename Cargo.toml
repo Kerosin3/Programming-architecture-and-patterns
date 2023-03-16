@@ -1,4 +1,6 @@
 [workspace]
 members=[
-"homework1_unittests"
+"homework1",
+"homework2",
+"ex1"
 ]
