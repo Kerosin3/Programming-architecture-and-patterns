@@ -6,14 +6,17 @@ mod test1 {
     ///
     fn test_no_roots() {
         // x^2+1 = 0
-        assert_eq!(try_solve_square_root(1.0_f64, 0.0_f64, 1.0_f64), Ok(None));
+        assert_eq!(
+            try_solve_square_root(1.0_f64, 0.0_f64, 1.0_f64, f64::EPSILON),
+            Ok(None)
+        );
     }
 
     #[test]
     fn test_two_roots_rank1() {
         // x^2-1=0
         assert_eq!(
-            try_solve_square_root(1.0_f64, 0.0_f64, -1.0_f64),
+            try_solve_square_root(1.0_f64, 0.0_f64, -1.0_f64, f64::EPSILON),
             Ok(Some((1.0_f64, -1.0_f64)))
         );
     }
@@ -21,14 +24,14 @@ mod test1 {
     fn test_two_roots_rank2() {
         // x^2+2x+1
         assert_eq!(
-            try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64),
+            try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, f64::EPSILON),
             Ok(Some((-1.0_f64, -1.0_f64)))
         );
     }
     #[test]
     fn test_coeff_a_zero() {
         assert_eq!(
-            try_solve_square_root(0.0_f64, 0.0_f64, 1.0_f64),
+            try_solve_square_root(0.0_f64, 0.0_f64, 1.0_f64, f64::EPSILON),
             Err(ErrorSolving::CoeffAValueError)
         );
     }
@@ -37,7 +40,7 @@ mod test1 {
     fn test_coeff_more_zero() {
         let near_zero = 2.2204460492503142e-16_f64; // greater
         assert_eq!(
-            try_solve_square_root(near_zero, 0.0_f64, 1.0_f64),
+            try_solve_square_root(near_zero, 0.0_f64, 1.0_f64, f64::EPSILON),
             Err(ErrorSolving::CoeffAValueError)
         );
     }

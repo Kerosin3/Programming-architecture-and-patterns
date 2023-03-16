@@ -22,8 +22,9 @@ pub fn try_solve_square_root(
     coeffA: f64,
     coeffB: f64,
     coeffC: f64,
+    epsi: f64,
 ) -> Result<Option<(f64, f64)>, ErrorSolving> {
-    if abs_diff_eq!(0.0, coeffA, epsilon = f64::EPSILON) {
+    if abs_diff_eq!(0.0, coeffA, epsilon = epsi) {
         return Err(ErrorSolving::CoeffAValueError);
     }
     let discr = |a: f64, b: f64, c: f64| -> f64 { b.powf(2.0) - (4.0 * a * c) };
