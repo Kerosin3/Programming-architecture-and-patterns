@@ -32,4 +32,13 @@ mod test1 {
             Err(ErrorSolving::CoeffAValueError)
         );
     }
+    #[test]
+    #[should_panic]
+    fn test_coeff_more_zero() {
+        let near_zero = 2.2204460492503142e-16_f64; // greater
+        assert_eq!(
+            try_solve_square_root(near_zero, 0.0_f64, 1.0_f64),
+            Err(ErrorSolving::CoeffAValueError)
+        );
+    }
 }
