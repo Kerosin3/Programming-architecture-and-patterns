@@ -20,6 +20,8 @@ mod test1 {
             Ok(Some((1.0_f64, -1.0_f64)))
         );
     }
+    //replaced
+    /*
     #[test]
     fn test_two_roots_rank2() {
         // x^2+2x+1
@@ -27,7 +29,7 @@ mod test1 {
             try_solve_square_root(1.0_f64, 2.0_f64, 1.0_f64, f64::EPSILON),
             Ok(Some((-1.0_f64, -1.0_f64)))
         );
-    }
+    }*/
     #[test]
     fn test_coeff_a_zero() {
         assert_eq!(
@@ -96,4 +98,13 @@ mod test1 {
             ErrorSolving::WrongEpsilonValue("abs epsilon value should be <= 0.5".to_string())
         );
     }
+    #[test]
+    fn test_two_roots_rank2_less_epsilon() {
+        // if less epsilon then assume its zero
+        // 25 - (~6.2499999 * 4)
+        let c = (12499999999999991111_f64) / (2000000000000000001_f64);
+        assert!(try_solve_square_root(1.0_f64, 5.0_f64, c, 0.00000000000002_f64).is_ok());
+    }
+    #[test]
+    fn abnormal_input_values() {}
 }

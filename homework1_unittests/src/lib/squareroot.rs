@@ -11,10 +11,14 @@ extern crate approx;
 /// * `arg2` - [f64:description]
 ///
 /// # Examples
-///
+/// doc test
 /// ```
 /// use libsquareroot::try_solve_square_root;
-/// assert!(true);
+/// assert_eq!(
+///     try_solve_square_root(2.0_f64, 0.0_f64, -18.0_f64, f64::EPSILON),
+///     Ok(Some((3.0_f64, -3.0_f64)))
+///     );
+
 /// ```
 #[allow(unused_variables)]
 #[allow(non_snake_case)]
@@ -24,6 +28,7 @@ pub fn try_solve_square_root(
     coeffC: f64,
     epsi: f64,
 ) -> Result<Option<(f64, f64)>, ErrorSolving> {
+    //test input values
     if !coeffA.is_finite() || !coeffB.is_finite() || !coeffC.is_finite() {
         return Err(ErrorSolving::AbnormalCoeffValue);
     }
@@ -61,10 +66,15 @@ pub fn try_solve_square_root(
         anws_roots
     };
     match D {
-        rez if rez < 0.0 => Ok(None),
-        rez if rez > 0.0 => Ok(Some(roots(rez, coeffA, coeffB))),
-        rez if rez == 0.0 => Ok(Some(roots(rez, coeffA, coeffB))),
-        _ => todo!(), //Nan
+        rez if rez < 0.0 => Ok(None), // no roots
+        rez if rez.abs() <= epsi => {
+            // near zero
+            let (root1, _) = roots(rez, coeffA, coeffB);
+            dbg!("discr value is {:.64}, epsi is {:.64}", D, epsi);
+            Ok(Some((root1, root1)))
+        }
+        rez if rez > 0.0 => Ok(Some(roots(rez, coeffA, coeffB))), //two roots
+        _ => Err(ErrorSolving::UnexpectedError),
     }
 }
 #[non_exhaustive]
@@ -73,4 +83,5 @@ pub enum ErrorSolving {
     CoeffAValueError,
     AbnormalCoeffValue,
     WrongEpsilonValue(String),
+    UnexpectedError,
 }
