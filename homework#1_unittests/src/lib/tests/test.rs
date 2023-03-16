@@ -105,6 +105,4 @@ mod test1 {
         let c = (12499999999999991111_f64) / (2000000000000000001_f64);
         assert!(try_solve_square_root(1.0_f64, 5.0_f64, c, 0.00000000000002_f64).is_ok());
     }
-    #[test]
-    fn abnormal_input_values() {}
 }
