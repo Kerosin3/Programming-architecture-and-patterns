@@ -1,0 +1,13 @@
+[package]
+name = "lib_shouse"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+thiserror = "*"
+tokio = { version = "*", features = ["full"] }
+anyhow = "*"
+futures = "*"
+futures-util = "0.3"
