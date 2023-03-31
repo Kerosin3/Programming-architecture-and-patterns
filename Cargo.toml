@@ -3,3 +3,19 @@ members=[
 "homework#1_unittests",
 "homework#2_setup_motherland"
 ]
+[profile.release]
+# less code to include into binary
+panic = 'abort'
+# optimization over all codebase ( better optimization, slower build )
+codegen-units = 1
+# optimization for size ( more aggressive )
+opt-level = 'z'
+# optimization for size
+# opt-level = 's'
+# link time optimization using using whole-program analysis
+lto = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+codegen-units = 8
