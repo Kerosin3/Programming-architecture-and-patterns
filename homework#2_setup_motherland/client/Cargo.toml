@@ -1,0 +1,22 @@
+[package]
+name = "client"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "binclient"
+path = "src/client_main.rs"
+
+[dependencies]
+hex-slice = "0.1.4"
+prost = "0.11.8"
+prost-types = "0.11.8"
+smallvec = "1.10.0"
+tokio = { version = "1.27.0", features = ["macros", "rt-multi-thread"] }
+tonic = "0.8.3"
+
+
+[build-dependencies]
+tonic-build = "0.8.3"
