@@ -1,4 +1,5 @@
 [workspace]
 members=[
 "homework#1_unittests",
+"homework#2_setup_motherland"
 ]
