@@ -1,7 +1,7 @@
 [workspace]
 members=[
 "homework#1_unittests",
-"homework#2_setup_motherland"
+#"homework#2_setup_motherland"
 ]
 [profile.release]
 # less code to include into binary

@@ -2,7 +2,7 @@
 use prost_types::Timestamp;
 //use std::time::SystemTime;
 use blake2::{Blake2b512, Blake2s256, Digest};
-use lib_game_mechanics::run_me;
+use game_mechanics::run_me;
 use tonic::{transport::Server, Request, Response, Status};
 use tracing::Level;
 use tracing_subscriber::fmt;
@@ -11,7 +11,6 @@ use connection_processor::server_connection_processing::Implement;
 use transport::transport_interface_server::{TransportInterface, TransportInterfaceServer};
 mod connection_processor;
 use connection_processor::server_connection_processing::Implement::*;
-//
 //main function
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

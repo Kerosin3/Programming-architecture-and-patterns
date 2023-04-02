@@ -1,16 +1,5 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#![feature(associated_type_defaults)]
+pub mod obj_mech;
 pub fn run_me() {
     println!("HEHEH");
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
 }

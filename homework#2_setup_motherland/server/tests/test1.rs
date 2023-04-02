@@ -1,47 +1,79 @@
 #[cfg(test)]
-#[mockall::automock]
-trait DatabaseExecutor {
-    fn send_query(&mut self, q: String);
-    fn send_queryV2(&mut self, q: String) -> anyhow::Result<()>;
-}
-
-fn send_some_query_to_db(mut db: Box<dyn DatabaseExecutor>, id: i32) -> anyhow::Result<()> {
-    let q = format!("query {}", id);
-    db.send_query(q);
-    Ok(())
-}
-
-fn send_query_v2(mut db: Box<dyn DatabaseExecutor>, id: i32) -> anyhow::Result<u16> {
-    let q = format!("queryv2 {}", id);
-    db.send_queryV2(q)?;
-    Ok(13_u16)
-}
-
-mod test1 {
-    use crate::*;
-    use anyhow::*;
-    use lib_game_mechanics::run_me;
+#[allow(unused_imports)]
+mod test_connection_handling {
+    //     use crate::*;
+    //     use super::connection_processor::server_connection_processing::Implement::*;
+    //     use anyhow::*;
+    //     use lib_common_server::connection_processor::server_connection_processing::Implement::TransportInterface;
+    use lib_common_server::connection_processor::server_connection_processing::Implement::*;
     use mockall::predicate::*;
     use mockall::*;
     use rstest::*;
-    #[test]
-    ///
-    fn some_test() {
-        let x = true;
-        run_me();
-        assert!(x);
+    use tonic::{Request, Response, Status};
+    use transport::transport_interface_server::TransportInterface;
+    use transport::{ClientCommand, ClientRequest, Connection, ServerResponse};
+    //---------------------------------
+    // trait reimported here
+    //testing connection
+    async fn test_accept_client(
+        connection: Box<dyn TransportInterface>,
+        request: Request<ClientRequest>,
+    ) -> Result<Response<ServerResponse>, Status> {
+        connection.establish_connection(request).await
     }
-    #[rstest]
-    #[case(42, format!("query {}",42_i32))]
-    #[case(555, format!("query {}",555_i32))]
-    fn test_initialize(#[case] input: i32, #[case] expected: String) {
-        let mut mockdb = Box::new(MockDatabaseExecutor::new());
-        mockdb
-            .expect_send_query()
-            .with(eq(expected))
+
+    #[tokio::test]
+    async fn client_connection_establishing() {
+        let request = tonic::Request::new(ClientRequest {
+            type_c: Connection::Client.into(),
+            command: ClientCommand::InitName.into(),
+            timestamp: Some(std::time::SystemTime::now().into()),
+            payload: None,
+        });
+        /*let response = Box::pin(std::future::ready(Ok(tonic::Response::new(
+            transport::ServerResponse {
+                server_answer: { format!("you asked for a person with a name {} ", "???") },
+            },
+        ))));*/
+        let mut mock_server = Box::<MockRpcServiceServer>::default();
+        mock_server
+            .expect_establish_connection()
             .times(1)
-            .returning(|_x| ());
-        // оно настроило и ожидает, что будет вызвана квери с ид 22
-        assert!(send_some_query_to_db(mockdb, input).is_ok());
+            .returning(|_x| {
+                Box::pin(std::future::ready(Ok(tonic::Response::new(
+                    transport::ServerResponse {
+                        server_answer: { format!("you asked for a person with a name {} ", "???") },
+                    },
+                ))))
+            });
+        assert!(test_accept_client(mock_server, request).await.is_ok());
+    }
+    #[tokio::test]
+    async fn test_no_client() {
+        let request = tonic::Request::new(ClientRequest {
+            type_c: Connection::Agent.into(),
+            command: ClientCommand::InitName.into(),
+            timestamp: Some(std::time::SystemTime::now().into()),
+            payload: None,
+        });
+        let mut mock_server = Box::<MockRpcServiceServer>::default();
+        mock_server
+            .expect_establish_connection()
+            .times(1)
+            .returning(|_x| {
+                Box::pin(std::future::ready(Ok(tonic::Response::new(
+                    transport::ServerResponse {
+                        server_answer: { "connecting agent".to_string() },
+                    },
+                ))))
+            });
+        assert_eq!(
+            test_accept_client(mock_server, request)
+                .await
+                .unwrap()
+                .into_inner()
+                .server_answer,
+            "connecting agent"
+        );
     }
 }
