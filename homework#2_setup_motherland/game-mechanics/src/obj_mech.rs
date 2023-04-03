@@ -1,8 +1,12 @@
 pub mod object_moving {
     use mockall::predicate::*;
     use mockall::*;
-    use std::fmt::Display;
+    //     use std::fmt::Display;
     use thiserror::Error;
+    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------
     pub trait Movable {
         type Coordinates;
         fn try_get_position(&self) -> Result<Self::Coordinates, ErrorMovindObject>;
@@ -19,37 +23,20 @@ pub mod object_moving {
             Ok(())
         }
     }
+    //--------------------------------------------------------------------------------------
     pub trait Rotable {
-        type Coordinates;
-        fn get_direction_number(&self);
-        fn get_angular_velocity(&self);
-        fn try_get_direction(&self) -> Result<Directions, ErrorMovindObject>;
-        fn try_set_direction(&self) -> Result<(), ErrorMovindObject>;
+        fn get_directions_number(&self) -> i8;
+        fn get_angular_velocity(&self) -> i8;
+        fn try_get_direction(&self) -> Result<i8, ErrorMovindObject>;
+        fn try_set_direction(&mut self, direct: i8) -> Result<(), ErrorMovindObject>;
     }
     pub trait RotateObj: Rotable {
-        fn execute_rotate(&mut self) -> Result<(), ErrorMovindObject> {
-            todo!()
-        }
+        fn execute_rotate(&mut self) -> Result<(), ErrorMovindObject>;
     }
-    #[derive(Copy, Clone, Debug)]
-    pub enum Directions {
-        _0,
-        _45,
-        _90,
-        _135,
-        _180,
-        _225,
-        _270,
-        _315,
-        _360,
-    }
-
-    impl std::ops::Add for Directions {
-        type Output = Self;
-        fn add(self, rhs: Self) -> Self::Output {
-            todo!()
-        }
-    }
+    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------
     #[derive(Copy, Clone, Debug, Default)]
     pub struct Point2D<T> {
         pub x: T,
@@ -58,6 +45,14 @@ pub mod object_moving {
     impl std::convert::From<Point2D<i32>> for (i32, i32) {
         fn from(value: Point2D<i32>) -> Self {
             (value.x, value.y)
+        }
+    }
+    impl std::convert::From<(i32, i32)> for Point2D<i32> {
+        fn from(value: (i32, i32)) -> Self {
+            Self {
+                x: value.0,
+                y: value.1,
+            }
         }
     }
 
