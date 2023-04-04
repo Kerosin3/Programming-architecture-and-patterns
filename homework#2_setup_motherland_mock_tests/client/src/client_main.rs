@@ -1,7 +1,6 @@
-use prost_types::Timestamp;
+#![allow(unused_imports)]
 use std::io::stdin;
 extern crate hex_slice;
-use hex_slice::AsHex;
 use transport::transport_interface_client::TransportInterfaceClient;
 use transport::{ClientCommand, ClientRequest, Connection, ServerResponse};
 pub mod transport {
@@ -11,24 +10,25 @@ pub mod transport {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut client = TransportInterfaceClient::connect("http://[::1]:8080").await?;
-    let response = client
+    let _response = client
         .establish_connection(BaseRequest::construct(Cmd1::Name))
         .await?;
-    let player_name = response.into_inner().server_answer;
+    let player_name = _response.into_inner().server_answer;
     println!("MY NAME IS {}", player_name);
     //------------------------------------------------------
-    let response = client
+    let _response = client
         .assign_arena(BaseRequest::construct(Cmd1::Battle))
         .await?;
-    let battle_name = response.into_inner().server_answer;
+    let battle_name = _response.into_inner().server_answer;
     println!("BATTLENAME IS {}", battle_name);
     //-------------------------------------
-    'process_input: loop {
+    loop {
         let cmd_text = take_input();
-        let response = client
+        let _response = client
             .client_command(BaseRequest::construct(Cmd1::Control(cmd_text)))
             .await?;
     }
+    #[allow(unreachable_code)]
     Ok(())
 }
 

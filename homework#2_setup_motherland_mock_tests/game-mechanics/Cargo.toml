@@ -1,5 +1,5 @@
 [package]
-name = "game-mechanics"
+name = "game_mechanics"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,6 +9,9 @@ name = "lib_game_mech"
 path = "./src/lib.rs"
 
 [dependencies]
+thiserror = "1.0.40"
+
+[dev-dependencies]
 mockall = {version = "0.11.4", feature="nightly"}
 rstest = "0.17.0"
-thiserror = "1.0.40"
+

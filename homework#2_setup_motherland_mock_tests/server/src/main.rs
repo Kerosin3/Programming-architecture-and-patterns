@@ -2,7 +2,7 @@
 use prost_types::Timestamp;
 //use std::time::SystemTime;
 use blake2::{Blake2b512, Blake2s256, Digest};
-use game_mechanics::run_me;
+use lib_game_mech::*;
 use tonic::{transport::Server, Request, Response, Status};
 use tracing::Level;
 use tracing_subscriber::fmt;

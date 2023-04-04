@@ -148,7 +148,7 @@ mod oject_interface_test {
             assert!(sh1.execute_move().is_ok());
             assert_eq!(
                 Into::<(i32, i32)>::into(sh1.try_get_position().unwrap()),
-                expected_pos.into()
+                expected_pos
             );
         }
         // test direction change after execute rotate
@@ -200,7 +200,7 @@ mod oject_interface_test {
             sh1.execute_rotate().unwrap();
             assert_eq!(
                 Into::<(i32, i32)>::into(sh1.try_get_position().unwrap()),
-                (3, 3).into()
+                (3, 3)
             );
             assert_eq!(
                 sh1.try_get_direction().unwrap(),
@@ -297,7 +297,7 @@ mod oject_interface_test {
             mocked_obj
                 .expect_try_get_velocity()
                 .times(1)
-                .returning(move || Ok(some_point.clone()));
+                .returning(move || Ok(some_point));
             mocked_obj
                 .expect_try_get_position()
                 .times(1)
