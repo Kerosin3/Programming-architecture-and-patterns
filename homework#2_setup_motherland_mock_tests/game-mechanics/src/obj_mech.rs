@@ -1,19 +1,27 @@
 pub mod object_moving {
-    use mockall::predicate::*;
-    use mockall::*;
-    //     use std::fmt::Display;
     use thiserror::Error;
     //--------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------
     //--------------------------------------------------------------------------------------
+    //
+    //################################################################3
+    //################################################################3
+    //################################################################3
+    pub const DIRECTION_NUMBERS: i8 = 8;
+    //################################################################3
+    //################################################################3
+    //################################################################3
+
     pub trait Commandable: MoveObj + RotateObj {}
+    // interface for moving
     pub trait Movable {
         type Coordinates;
         fn try_get_position(&self) -> Result<Self::Coordinates, ErrorProcessing>;
         fn try_get_velocity(&self) -> Result<Self::Coordinates, ErrorProcessing>;
         fn try_set_position(&mut self, vector: Self::Coordinates) -> Result<(), ErrorProcessing>;
     }
+    // conststent interface
     pub trait MoveObj: Movable {
         fn execute_move(&mut self) -> Result<(), ErrorProcessing>
         where
@@ -24,6 +32,7 @@ pub mod object_moving {
             Ok(())
         }
     }
+    // interface for rotating
     //--------------------------------------------------------------------------------------
     pub trait Rotable {
         fn get_directions_number(&self) -> i8;
@@ -31,11 +40,12 @@ pub mod object_moving {
         fn try_get_direction(&self) -> Result<i8, ErrorProcessing>;
         fn try_set_direction(&mut self, direct: i8) -> Result<(), ErrorProcessing>;
     }
+    // conststent interface
     pub trait RotateObj: Rotable {
         fn execute_rotate(&mut self) -> Result<(), ErrorProcessing> {
-            let d_number = 8_i8;
+            let d_number = DIRECTION_NUMBERS.abs();
             let t1 = self.try_get_direction()? + self.get_angular_velocity();
-            let t2 = t1 % (i8::from(d_number));
+            let t2 = t1 % (d_number);
             self.try_set_direction(t2)?;
             Ok(())
         }
@@ -73,6 +83,7 @@ pub mod object_moving {
         }
     }
     #[derive(Copy, Clone, Debug, Error, PartialEq)]
+    #[non_exhaustive]
     pub enum ErrorProcessing {
         #[error("generic error")]
         Err,
@@ -84,20 +95,5 @@ pub mod object_moving {
         ErrRotating,
         #[error("error setting")]
         ErrSetting,
-    }
-    pub trait Trait1 {
-        fn func1(&self) -> Result<(), SomeError>;
-        fn func2(&self) -> Result<(), SomeError>;
-    }
-
-    pub trait Trait2: Trait1 {
-        fn funcX(&self) -> Result<(), SomeError> {
-            self.func1()?;
-            self.func2()?;
-            Ok(())
-        }
-    }
-    pub enum SomeError {
-        Err,
     }
 }
