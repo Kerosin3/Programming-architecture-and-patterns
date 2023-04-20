@@ -1,5 +1,5 @@
 #[cfg(test)]
-mod test1 {
+pub mod testlib {
     use crate::*;
     #[test]
     /// try solve no rrots
@@ -40,6 +40,7 @@ mod test1 {
     #[test]
     #[should_panic]
     fn test_coeff_more_zero() {
+        #[allow(clippy::all)]
         let near_zero = 2.2204460492503142e-16_f64; // greater
         assert_eq!(
             try_solve_square_root(near_zero, 0.0_f64, 1.0_f64, f64::EPSILON),
