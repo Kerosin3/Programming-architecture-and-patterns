@@ -1,0 +1,14 @@
+[package]
+name = "homework2_mocking"
+version = "0.1.0"
+edition = "2021"
+
+
+[lib]
+name = "lib_game"
+path = "src/lib.rs"
+
+[dependencies]
+mockall = "0.11.4"
+rstest = "0.17.0"
+thiserror = "1.0.40"
