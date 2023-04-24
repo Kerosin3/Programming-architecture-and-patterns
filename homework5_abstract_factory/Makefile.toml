@@ -1,0 +1,74 @@
+[env]
+RUST_BACKTRACE = 1
+
+[tasks.user]
+script = '''
+echo current user is [${USER}]
+'''
+
+[tasks.rustc-version-stable]
+toolchain = "stable"
+command = "rustc"
+args = [ "--version" ]
+
+[tasks.rustc-version-nightly]
+toolchain = "nightly"
+command = "rustc"
+args = [ "--version" ]
+
+[tasks.rustc-version-flow]
+dependencies = [
+    "rustc-version-stable",
+    "rustc-version-nightly"
+]
+
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy","--all","--all-features","--tests","--","-D","warnings"]
+dependencies = ["format"]
+
+[tasks.clippy-development]
+command = "cargo"
+args = ["clippy","--all","--all-features","--tests"]
+dependencies = ["format"]
+
+
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+[tasks.build-dev]
+condition = { profiles = [ "development" ] }
+command = "cargo"
+args = ["build","--all-features"]
+
+[tasks.build-prod]
+condition = { profiles = [ "production" ] }
+command = "cargo"
+args = ["build","--all-features","--release"]
+
+[tasks.test]
+command = "cargo"
+args = ["test","--","--nocapture"]
+
+[tasks.assembly]
+dependencies = [
+    "user",
+    "rustc-version-flow",
+    "format",
+    "clippy",
+    {name = "build-prod", condition = ["production"] },
+    {name = "build-dev", condition = ["development"] },
+    "test"
+]
+[tasks.test_all]
+dependencies = [
+    "format",
+    "clippy-development",
+    "test"
+]

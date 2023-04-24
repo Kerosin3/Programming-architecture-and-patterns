@@ -1,0 +1,16 @@
+[package]
+name = "abstract_fabric"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "lib_sorting"
+path = "src/lib.rs"
+
+[[bin]]
+name = "sorting"
+path = "src/bin.rs"
+
+
+[dependencies]
+clap = { version = "4.2.4", features = ["derive"] }
