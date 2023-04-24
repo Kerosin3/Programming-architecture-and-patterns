@@ -5,7 +5,7 @@ mod mergesort;
 use mergesort::method_implement::sort as mergesirt;
 mod bubblesort;
 use bubblesort::method_impl::sort as bubblesort;
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use std::path::PathBuf;
 //-------------------------------------------------------
 //-------------------------------------------------------
@@ -18,7 +18,7 @@ struct Args {
     input_filename: String,
     /// method
     /// please specity sorting method
-    #[clap(short, long, value_parser, verbatim_doc_comment)]
+    #[clap(value_enum,short, long, value_parser, verbatim_doc_comment,default_value_t = SortMethod::Quick)]
     method: SortMethod,
 }
 #[derive(clap::ValueEnum, Clone, Debug)]
@@ -26,6 +26,15 @@ pub enum SortMethod {
     Bubble,
     Merge,
     Quick,
+}
+impl std::fmt::Display for SortMethod {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            SortMethod::Bubble => write!(f, "Bubble"),
+            SortMethod::Merge => write!(f, "Merge"),
+            SortMethod::Quick => write!(f, "Quick"),
+        }
+    }
 }
 //-------------------------------------------------------
 //-------------------------------------------------------
