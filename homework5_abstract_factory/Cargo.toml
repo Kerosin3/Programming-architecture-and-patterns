@@ -13,4 +13,5 @@ path = "src/bin.rs"
 
 
 [dependencies]
+byteorder = "1.4.3"
 clap = { version = "4.2.4", features = ["derive"] }

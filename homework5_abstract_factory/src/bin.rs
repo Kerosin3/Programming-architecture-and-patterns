@@ -5,7 +5,10 @@ mod mergesort;
 use mergesort::method_implement::sort as mergesirt;
 mod bubblesort;
 use bubblesort::method_impl::sort as bubblesort;
+use byteorder::{ByteOrder, LittleEndian, ReadBytesExt, WriteBytesExt};
 use clap::{Parser, ValueEnum};
+use std::fs::File;
+use std::io::Write;
 use std::path::PathBuf;
 //-------------------------------------------------------
 //-------------------------------------------------------
@@ -39,8 +42,26 @@ impl std::fmt::Display for SortMethod {
 //-------------------------------------------------------
 //-------------------------------------------------------
 
-fn main() {
-    let args = Args::parse();
+fn main() -> std::io::Result<()> {
+    let mut root_d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    println!("root is {}", root_d.display());
+    let mut buffer = vec![];
+    let mut val: i32 = -1_000_000;
+    for _i in 0..=9 {
+        println!("writing {}", val);
+        buffer.write_i32::<LittleEndian>(val).unwrap();
+        val -= 1;
+    }
+    let mut f = File::create("foo.txt")?;
+    f.write_all(&buffer)?;
+    std::mem::drop(f); // dropping
+    let mut f = File::open("foo.txt")?;
+    for _i in 0..=9 {
+        let readed = f.read_i32::<LittleEndian>().unwrap();
+        println!("readed:{}", readed);
+    }
+    Ok(())
+    //     let args = Args::parse();
 }
 #[derive(Default, Debug)]
 pub struct BubbleSort {
