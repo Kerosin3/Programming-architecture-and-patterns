@@ -41,25 +41,38 @@ impl std::fmt::Display for SortMethod {
 }
 //-------------------------------------------------------
 //-------------------------------------------------------
+const N_ELEMENT: usize = 50;
+//-------------------------------------------------------
+//-------------------------------------------------------
+use std::iter::repeat_with;
+fn generate_random() -> Vec<i32> {
+    let v: Vec<i32> = repeat_with(|| fastrand::i32(..)).take(N_ELEMENT).collect();
+    v
+}
 
 fn main() -> std::io::Result<()> {
     let mut root_d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    println!("root is {}", root_d.display());
     let mut buffer = vec![];
-    let mut val: i32 = -1_000_000;
-    for _i in 0..=9 {
-        println!("writing {}", val);
-        buffer.write_i32::<LittleEndian>(val).unwrap();
-        val -= 1;
+    for item in generate_random().iter() {
+        println!("writing {}", item);
+        buffer.write_i32::<LittleEndian>(*item).unwrap(); // write to buffer
     }
     let mut f = File::create("foo.txt")?;
-    f.write_all(&buffer)?;
+    f.write_all(&buffer)?; // write to file all data
     std::mem::drop(f); // dropping
     let mut f = File::open("foo.txt")?;
-    for _i in 0..=9 {
+    let mut buf_readed: Vec<i32> = vec![];
+    for _i in 0..N_ELEMENT {
         let readed = f.read_i32::<LittleEndian>().unwrap();
         println!("readed:{}", readed);
+        buf_readed.push(readed);
     }
+    let quiksort_factory = QuickSortFactory;
+    let mut quick_instance = quiksort_factory.instantiate_sorting();
+    quick_instance.assign_data(&buf_readed);
+    quick_instance.do_task();
+    println!("---------------");
+    quick_instance.printout();
     Ok(())
     //     let args = Args::parse();
 }
@@ -88,6 +101,16 @@ impl Sorting for BubbleSort {
     fn assign_data(&mut self, vec: &[i32]) {
         self.vec = vec.to_owned();
     }
+    fn validate_data(&self, vec: &[i32]) -> Option<()> {
+        if vec != self.vec {
+            None
+        } else {
+            Some(())
+        }
+    }
+    fn printout(&self) {
+        println!("{:?}", self.vec);
+    }
 }
 impl Sorting for MergeSort {
     fn do_task(&mut self) {
@@ -97,6 +120,16 @@ impl Sorting for MergeSort {
     fn assign_data(&mut self, vec: &[i32]) {
         self.vec = vec.to_owned();
     }
+    fn validate_data(&self, vec: &[i32]) -> Option<()> {
+        if vec != self.vec {
+            None
+        } else {
+            Some(())
+        }
+    }
+    fn printout(&self) {
+        println!("{:?}", self.vec);
+    }
 }
 impl Sorting for QuickSort {
     fn do_task(&mut self) {
@@ -105,6 +138,16 @@ impl Sorting for QuickSort {
     }
     fn assign_data(&mut self, vec: &[i32]) {
         self.vec = vec.to_owned();
+    }
+    fn validate_data(&self, vec: &[i32]) -> Option<()> {
+        if vec != self.vec {
+            None
+        } else {
+            Some(())
+        }
+    }
+    fn printout(&self) {
+        println!("{:?}", self.vec);
     }
 }
 
