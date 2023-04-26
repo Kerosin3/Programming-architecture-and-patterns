@@ -1,26 +1,6 @@
 [env]
 RUST_BACKTRACE = 1
 
-[tasks.user]
-script = '''
-echo current user is [${USER}]
-'''
-
-[tasks.rustc-version-stable]
-toolchain = "stable"
-command = "rustc"
-args = [ "--version" ]
-
-[tasks.rustc-version-nightly]
-toolchain = "nightly"
-command = "rustc"
-args = [ "--version" ]
-
-[tasks.rustc-version-flow]
-dependencies = [
-    "rustc-version-stable",
-    "rustc-version-nightly"
-]
 
 [tasks.format]
 install_crate = "rustfmt"
@@ -36,7 +16,6 @@ dependencies = ["format"]
 command = "cargo"
 args = ["clippy","--all","--all-features","--tests"]
 dependencies = ["format"]
-
 
 [tasks.clean]
 command = "cargo"

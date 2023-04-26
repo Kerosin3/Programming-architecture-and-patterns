@@ -8,4 +8,10 @@ pub trait Sorting {
     fn do_task(&mut self);
     fn validate_data(&self, vec: &[i32]) -> Option<()>;
     fn printout(&self);
+    fn get_data(&self) -> Vec<i32>;
+    fn perform(&mut self, data: &[i32]) -> Vec<i32> {
+        self.assign_data(data);
+        self.do_task();
+        self.get_data()
+    }
 }

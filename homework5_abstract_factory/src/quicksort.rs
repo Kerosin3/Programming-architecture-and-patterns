@@ -7,7 +7,7 @@ pub mod method_impl {
 
     fn quick_sort_partition(array: &mut [i32], start: isize, end: isize) {
         if start < end && end - start >= 1 {
-            let pivot = partition(array, start as isize, end as isize);
+            let pivot = partition(array, start, end);
             quick_sort_partition(array, start, pivot - 1);
             quick_sort_partition(array, pivot + 1, end);
         }
@@ -19,7 +19,7 @@ pub mod method_impl {
 
         for j in l..h {
             if array[j as usize] <= pivot {
-                i = i + 1;
+                i += 1;
                 array.swap(i as usize, j as usize);
             }
         }
