@@ -36,4 +36,13 @@ mod tests_one {
         let answer = vec![-123, -1, 0, 3, 3, 3, 4, 5, 7, 7, 10, 54, 2321];
         assert!(bubble_instance.validate_data(&answer).is_some());
     }
+    #[test]
+    fn test_perform() {
+        let vec0: Vec<i32> = vec![0, 3, 54, -1, 3, 5, 7, 7, 10, 4, 2321, -123, 3];
+        let factory_merge = MergeSortFactory;
+        let mut merge_instance = factory_merge.instantiate_sorting();
+        merge_instance.perform(&vec0);
+        let answer = vec![-123, -1, 0, 3, 3, 3, 4, 5, 7, 7, 10, 54, 2321];
+        assert!(merge_instance.validate_data(&answer).is_some());
+    }
 }
