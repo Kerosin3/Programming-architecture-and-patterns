@@ -8,7 +8,7 @@ name = "lib_sorting"
 path = "src/lib.rs"
 
 [[bin]]
-name = "sorting"
+name = "sorting-app"
 path = "src/bin.rs"
 
 

@@ -13,9 +13,9 @@ const N_ELEMENT: usize = 50;
 use bubblesort::method_impl::sort as bubblesort;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use clap::Parser;
+use std::env;
 use std::fs::File;
 use std::io::Write;
-use std::path::PathBuf;
 use thiserror::Error;
 //-------------------------------------------------------
 //-------------------------------------------------------
@@ -73,8 +73,9 @@ fn generate_random() -> Vec<i32> {
 }
 
 fn main() -> anyhow::Result<()> {
+    let cur_dir_path = env::current_dir()?; // get current dir
     let args = Args::parse();
-    let debug_mode = if args.debug.is_some() { true } else { false };
+    let debug_mode = args.debug.is_some();
     // parse workmode
     let work_mode = match args.workmode {
         AppWorkmode::WriteRandom => {
@@ -116,37 +117,37 @@ fn main() -> anyhow::Result<()> {
     match work_mode {
         /*writes 50 random i32 to a file*/
         AppWorkmode::WriteRandom => {
-            let filen =
-                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(args.output_filename.unwrap());
+            let filen = cur_dir_path.join(args.output_filename.unwrap());
             let mut file_w = File::create(filen)?;
+            let mut n = 0;
             for item in generate_random().iter() {
                 if debug_mode {
-                    println!("writing {}", *item)
+                    println!("[{}] writing {}", n, *item)
                 };
+                n += 1;
                 file_w.write_i32::<LittleEndian>(*item).unwrap(); // write to buffer
             }
         }
         /*read 50 random i32 from a file*/
         AppWorkmode::ReadFile => {
-            let filen =
-                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(args.input_filename.unwrap());
+            let filen = cur_dir_path.join(args.input_filename.unwrap());
 
             let mut f = File::open(filen)?;
             let mut buf_readed: Vec<i32> = vec![];
+            let mut n = 0;
             for _i in 0..N_ELEMENT {
                 let readed = f.read_i32::<LittleEndian>().unwrap();
                 if debug_mode {
-                    println!("readed:{}", readed)
+                    println!("[{}] readed:[{}]", n, readed);
                 };
+                n += 1;
                 buf_readed.push(readed); // tush to buf
             }
         }
         /*read i32 little endian from file, sorting and writes sorted array to a specified file*/
         AppWorkmode::Operating => {
-            let input_filename =
-                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(args.input_filename.unwrap());
-            let out_filename =
-                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(args.output_filename.unwrap());
+            let input_filename = cur_dir_path.join(args.input_filename.unwrap());
+            let out_filename = cur_dir_path.join(args.output_filename.unwrap());
             let mut file_w = File::create(&out_filename)?; // create for writing
             let mut f = File::open(input_filename)?;
             let mut buf_readed: Vec<i32> = vec![];
