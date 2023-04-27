@@ -1,4 +1,4 @@
-# hw 5 "abstract factory"
+# HW 5 "abstract factory"
 
 ## Requirements
 

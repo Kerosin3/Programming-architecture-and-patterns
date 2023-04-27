@@ -1,3 +1,3 @@
-# Otus programmin architecture and patterns coursework
+# Otus programming architecture and patterns coursework
 
 - cargo make project edition
