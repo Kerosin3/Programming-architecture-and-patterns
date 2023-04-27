@@ -10,7 +10,7 @@
 
 - Use ``cargo make --profile production assembly_linux`` to assembly binaries for Linux
 - Use `` cargo make --profile production assembly_windows`` to asembly binaries for Windows
-- Use ``cargo make test_all`` to run tests
+- Use ``cargo make test_all`` or ``cargo test`` **to run tests**
 
 ## How to use (linux example)
 1. use ``sorhing -h`` to get help
