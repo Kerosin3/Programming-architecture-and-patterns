@@ -90,7 +90,7 @@ fn main() -> anyhow::Result<()> {
         }
         AppWorkmode::ReadFile => {
             println!(
-                "Reading i32 from file [{}] n= [{}]]",
+                "Reading i32 from file [{}] n= [{}]",
                 args.input_filename
                     .to_owned()
                     .ok_or::<anyhow::Error>(AppError::ErrorProcessingInputFile.into())?,
