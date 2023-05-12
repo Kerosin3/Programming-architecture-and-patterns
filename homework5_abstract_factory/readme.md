@@ -22,5 +22,5 @@
 
 ## UML diagram
 
-![](https://github.com/Kerosin3/RUST-WASM-RPC-PROJECT/blob/main/docs/shema.jpg)
+![](https://github.com/Kerosin3/Programming-architecture-and-patterns/blob/cargo-make/homework5_abstract_factory/pics/hw5.png)
 
