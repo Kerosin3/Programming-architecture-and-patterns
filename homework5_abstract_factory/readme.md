@@ -22,5 +22,5 @@
 
 ## UML diagram
 
-![](https://github.com/Kerosin3/Programming-architecture-and-patterns/blob/cargo-make/homework5_abstract_factory/pics/hw5.png)
+![](https://github.com/Kerosin3/Programming-architecture-and-patterns/blob/cargo-make/homework5_abstract_factory/pics/hw5.jpg)
 
