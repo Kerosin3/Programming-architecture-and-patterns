@@ -19,3 +19,8 @@
 4. Sort with specified method [possible values: bubble, merge, quick] ``./sorting-app -m merge -w operating --input-filename test_out --output-filename  sorted``
 5. Verify that numbers were sorted correctly by running ``./sorting-app -w read-file --input-filename sorted -d true``
 6. Verify method signature ``tail --byte 30 sorted``
+
+## UML diagram
+
+![](https://github.com/Kerosin3/RUST-WASM-RPC-PROJECT/blob/main/docs/shema.jpg)
+
