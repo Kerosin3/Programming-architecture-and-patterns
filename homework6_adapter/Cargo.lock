@@ -3,6 +3,19 @@
 version = 3
 
 [[package]]
+name = "adapter"
+version = "0.1.0"
+dependencies = [
+ "byteorder",
+ "bytes",
+ "fastrand",
+ "hex",
+ "postcard",
+ "serde",
+ "serde_with",
+]
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -718,16 +731,3 @@ name = "windows_x86_64_msvc"
 version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a515f5799fe4961cb532f983ce2b23082366b898e52ffbce459c86f67c8378a"
-
-[[package]]
-name = "writer"
-version = "0.1.0"
-dependencies = [
- "byteorder",
- "bytes",
- "fastrand",
- "hex",
- "postcard",
- "serde",
- "serde_with",
-]

@@ -5,6 +5,7 @@ use std::env;
 use std::fs::File;
 use std::io::BufWriter;
 //#######################################################
+//// assumed work with this value
 const N_MATRIX: usize = 2;
 //#######################################################
 fn main() -> Result<(), std::io::Error> {
@@ -14,6 +15,7 @@ fn main() -> Result<(), std::io::Error> {
 }
 
 struct Prog2Obj;
+// implement interface for writing matrixes
 impl Prog2Interface for Prog2Obj {
     type Output = Matrix<MATRIX_LINEAR_SIZE>;
     fn create_file_and_write_matrixes(&mut self, fname: &str) -> Result<(), std::io::Error> {
@@ -23,7 +25,6 @@ impl Prog2Interface for Prog2Obj {
         let mut writer = BufWriter::new(opened_file); // create writer
         let mut matrix_to_write = self.create_matrixes();
         matrix_to_write.write_to_writer(&mut writer, N_MATRIX);
-
         Ok(())
     }
 

@@ -3,6 +3,7 @@ use byteorder::LittleEndian;
 use byteorder::WriteBytesExt;
 use libmatrix::interfaces::*;
 use libmatrix::matrix_common::Matrix;
+use libmatrix::prog1_stucts::*;
 use libmatrix::{COLUMNS, MATRIX_LINEAR_SIZE, ROWS, SERIALIZED_SIZE};
 use std::env;
 use std::fs::File;
@@ -10,48 +11,27 @@ use std::io::prelude::*;
 use std::io::Read;
 use std::io::{Cursor, SeekFrom};
 //
-//
-//
-//
 fn main() -> Result<(), std::io::Error> {
-    let mut prog_data = Prog1::default();
-    let readed_bytes = Prog1::open_and_read_file("somefile")?;
-    prog_data.assign_mtrx1(Prog1::read_matrix::<0>(&readed_bytes));
-    prog_data.assign_mtrx2(Prog1::read_matrix::<{ SERIALIZED_SIZE as u64 }>(
-        &readed_bytes,
-    ));
-    prog_data.printout_matrixes();
+    let mut prog_data = Prog1Wrap::default();
+    let readed_bytes = Prog1Wrap::open_and_read_file("somefile")?;
+    prog_data
+        .0
+        .assign_mtrx1(Prog1Wrap::read_matrix::<0>(&readed_bytes));
+    prog_data
+        .0
+        .assign_mtrx2(Prog1Wrap::read_matrix::<{ SERIALIZED_SIZE as u64 }>(
+            &readed_bytes,
+        ));
+    prog_data.0.printout_matrixes();
     println!("summ matrix is {:?}", prog_data.calculate_sum()?);
-    Prog1::create_and_write_file(&prog_data, "sum_out")?;
+    Prog1Wrap::create_and_write_file(&prog_data, "sum_out")?;
     Ok(())
 }
-//####################################################33
-#[allow(non_snake_case)]
+//mut use newtype
 #[derive(Debug, Default)]
-pub struct Prog1 {
-    pub mtrx1: Mtrx,
-    pub mtrx2: Mtrx,
-    pub mtrxSum: Mtrx,
-}
-impl Prog1 {
-    pub fn assign_mtrx1(&mut self, data: Vec<i32>) {
-        let matrix_len = data.len();
-        assert_eq!(ROWS * COLUMNS, matrix_len);
-        self.mtrx1 = Mtrx { data };
-        self.mtrxSum = Mtrx {
-            data: vec![0_i32; matrix_len],
-        };
-    }
-    pub fn assign_mtrx2(&mut self, data: Vec<i32>) {
-        assert_eq!(ROWS * COLUMNS, data.len());
-        self.mtrx2 = Mtrx { data };
-    }
-    pub fn printout_matrixes(&self) {
-        println!("matrix 1 is {:?}", self.mtrx1);
-        println!("matrix 2 is {:?}", self.mtrx2);
-    }
-}
-impl Prog1Interface for Prog1 {
+struct Prog1Wrap(Prog1);
+// implement reader interface
+impl Prog1Interface for Prog1Wrap {
     fn open_and_read_file(fname: &str) -> Result<Vec<u8>, std::io::Error> {
         let cur_dir_path = env::current_dir()?; // get current dir
         let filename = cur_dir_path.join(fname);
@@ -65,7 +45,7 @@ impl Prog1Interface for Prog1 {
         let cur_dir_path = env::current_dir()?; // get current dir
         let filename = cur_dir_path.join(fname);
         let mut file_w = File::create(&filename)?;
-        for (_j, item) in self.mtrxSum.data.iter().enumerate() {
+        for (_j, item) in self.0.mtrxSum.data.iter().enumerate() {
             file_w.write_i32::<LittleEndian>(*item).unwrap(); // write to buffer
         }
         Ok(())
@@ -83,9 +63,9 @@ impl Prog1Interface for Prog1 {
     fn calculate_sum(&mut self) -> Result<&Mtrx, std::io::Error> {
         for c in 0..COLUMNS {
             for r in 0..ROWS {
-                self.mtrxSum[(r, c)] = self.mtrx1[(r, c)] + self.mtrx2[(r, c)];
+                self.0.mtrxSum[(r, c)] = self.0.mtrx1[(r, c)] + self.0.mtrx2[(r, c)];
             }
         }
-        Ok(&self.mtrxSum)
+        Ok(&self.0.mtrxSum)
     }
 }

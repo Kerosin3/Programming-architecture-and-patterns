@@ -3,30 +3,16 @@
 //--------------------------------------------
 pub const ROWS: usize = 2;
 pub const COLUMNS: usize = 7;
-pub const MATRIX_LINEAR_SIZE: usize = std::mem::size_of::<i32>() * COLUMNS * ROWS; // 4 bytes * 5 x i32
+pub const MATRIX_LINEAR_SIZE: usize = std::mem::size_of::<i32>() * COLUMNS * ROWS; // 4 bytes * n_numbers
 pub const SERIALIZED_SIZE: usize = MATRIX_LINEAR_SIZE + 1;
+/*
 //--------------------------------------------
-//--------------------------------------------
+//--------------------------------------------*/
+//// import common structs
+pub mod prog1_stucts;
+/* MAIN PROGRAM INTERFACES*/
 pub mod interfaces {
-    use super::COLUMNS;
-    #[derive(Debug, Default)]
-    pub struct Mtrx {
-        pub data: Vec<i32>,
-    }
-    // [ ROW, COLUMN ]
-    impl std::ops::Index<(usize, usize)> for Mtrx {
-        type Output = i32;
-
-        fn index(&self, index: (usize, usize)) -> &Self::Output {
-            &self.data[index.0 * COLUMNS + index.1]
-        }
-    }
-    impl std::ops::IndexMut<(usize, usize)> for Mtrx {
-        fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-            return &mut self.data[index.0 * COLUMNS + index.1];
-        }
-    }
-
+    use super::prog1_stucts::Mtrx;
     pub trait Prog1Interface {
         fn open_and_read_file(fname: &str) -> Result<Vec<u8>, std::io::Error>;
         fn create_and_write_file(&self, fname: &str) -> Result<(), std::io::Error>;
@@ -54,6 +40,7 @@ pub mod matrix_common {
     use std::io::{Cursor, SeekFrom};
     //--------------------------------------------
     //--------------------------------------------
+    // used for writing matrixes
     #[serde_as]
     #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
     #[repr(C)]
@@ -123,8 +110,8 @@ pub mod matrix_common {
 }
 //--------------------------------------------
 //--------------------------------------------
+//generate random numbers
 pub mod misc {
-    //generate random numbers
     use super::MATRIX_LINEAR_SIZE;
     use std::iter::repeat_with;
     pub fn generate_random() -> Vec<i32> {
