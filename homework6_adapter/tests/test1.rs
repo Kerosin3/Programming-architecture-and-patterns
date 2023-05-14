@@ -5,14 +5,31 @@ pub mod test {
     use std::env;
     use std::fs::File;
     use std::io::BufWriter;
+    use std::process::Command;
     #[test]
     fn test_correctness() {
-        let fname = "somefile";
+        let output = Command::new("cargo")
+            .args(&["build"])
+            .output()
+            .expect("Failed to execute command");
+        println!("{:?}", output.stdout);
+        assert!(output.status.success());
+        println!("----------> BUILD COMPLITE <---------------");
+        //----------------------------------
+        // creating file with data
+        let matrix_data_filename = "matrixes_data";
         let cur_dir_path = env::current_dir().unwrap(); // get current dir
-        let filename = cur_dir_path.join(fname);
-        let opened_file = File::create(&filename).unwrap();
-        let mut writer = BufWriter::new(opened_file); // create writer
-        let mut matrix_to_write = self.create_matrixes();
-        let mut matrixes = matrix_to_write.write_to_writer(&mut writer, N_MATRIX);
+        let m_creator = cur_dir_path
+            .join("target")
+            .join("debug")
+            .join("examples")
+            .join("matrix_creator");
+        let create_matrixes = Command::new(m_creator)
+            .args(["-o", matrix_data_filename])
+            .output()
+            .expect("Failed to execute command");
+        assert!(create_matrixes.status.success());
+        // build all
+        // .args(&["run --example matrix_reader -- -i somefile -o sum"])
     }
 }

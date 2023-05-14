@@ -17,10 +17,10 @@ const N_MATRIX: usize = 2;
 #[derive(Debug, clap::Parser, Clone)]
 #[clap(long_about = "Adapter example")]
 struct Args {
-    /// input filename
-    /// specify input filename
+    /// matrix filename
+    /// specify matrix filename
     #[clap(short, long, value_parser, verbatim_doc_comment)]
-    input_filename: String,
+    matrix_filename: String,
     /// output filename
     /// specify output filename
     #[clap(short, long, value_parser, verbatim_doc_comment)]
@@ -29,11 +29,11 @@ struct Args {
 
 fn main() -> Result<(), std::io::Error> {
     let args = Args::parse();
-    let input_filename = args.input_filename;
+    let mtrx_filename = args.matrix_filename;
     let output_filename = args.output_filename;
 
     let mut prg2 = Prog1Wrap::default();
-    prg2.create_file_and_write_matrixes(&input_filename)?;
+    prg2.create_file_and_write_matrixes(&mtrx_filename)?;
     // create adapter class
     let mut prg1adapt = Prog1Adapter { prog2: prg2 };
     // calculate summ
