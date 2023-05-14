@@ -16,3 +16,4 @@ serde = {version = "1.0.159",features =["derive"]}
 serde_with = "2.3.2"
 fastrand = "1.9.0"
 byteorder = "1.4.3"
+clap = { version = "4.2.4", features = ["derive"] }

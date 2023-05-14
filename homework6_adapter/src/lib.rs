@@ -21,7 +21,10 @@ pub mod interfaces {
     }
     pub trait Prog2Interface {
         type Output;
-        fn create_file_and_write_matrixes(&mut self, fname: &str) -> Result<(), std::io::Error>;
+        fn create_file_and_write_matrixes(
+            &mut self,
+            fname: &str,
+        ) -> Result<Vec<Vec<i32>>, std::io::Error>;
         fn create_matrixes(&self) -> Self::Output;
     }
 }

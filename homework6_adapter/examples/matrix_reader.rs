@@ -1,6 +1,7 @@
 #![feature(cursor_remaining)]
 use byteorder::LittleEndian;
 use byteorder::WriteBytesExt;
+use clap::Parser;
 use libmatrix::interfaces::*;
 use libmatrix::matrix_common::Matrix;
 use libmatrix::prog1_stucts::*;
@@ -11,9 +12,29 @@ use std::io::prelude::*;
 use std::io::Read;
 use std::io::{Cursor, SeekFrom};
 //
+//
+
+#[derive(Debug, clap::Parser, Clone)]
+#[clap(long_about = "Reading two matrixes from the file, and writes back to output file")]
+struct Args {
+    /// input filename
+    /// specify input filename
+    #[clap(short, long, value_parser, verbatim_doc_comment)]
+    input_filename: String,
+    /// output filename
+    /// specify output filename
+    #[clap(short, long, value_parser, verbatim_doc_comment)]
+    output_filename: String,
+}
+
 fn main() -> Result<(), std::io::Error> {
+    //-----------------------------------------
+    let args = Args::parse();
+    let input_filename = args.input_filename;
+    let output_filename = args.output_filename;
+    //------------------------------------------
     let mut prog_data = Prog1Wrap::default();
-    let readed_bytes = Prog1Wrap::open_and_read_file("somefile")?;
+    let readed_bytes = Prog1Wrap::open_and_read_file(&input_filename)?;
     prog_data
         .0
         .assign_mtrx1(Prog1Wrap::read_matrix::<0>(&readed_bytes));
@@ -24,7 +45,7 @@ fn main() -> Result<(), std::io::Error> {
         ));
     prog_data.0.printout_matrixes();
     println!("summ matrix is {:?}", prog_data.calculate_sum()?);
-    Prog1Wrap::create_and_write_file(&prog_data, "sum_out")?;
+    Prog1Wrap::create_and_write_file(&prog_data, &output_filename)?;
     Ok(())
 }
 //mut use newtype

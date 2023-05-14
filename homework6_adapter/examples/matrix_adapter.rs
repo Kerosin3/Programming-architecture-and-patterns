@@ -1,3 +1,6 @@
+use byteorder::LittleEndian;
+use byteorder::WriteBytesExt;
+use clap::Parser;
 use libmatrix::interfaces::Prog1Interface; // import prog 1 trait
 use libmatrix::interfaces::*;
 use libmatrix::matrix_common::Matrix;
@@ -10,13 +13,32 @@ use std::io::BufWriter;
 //#######################################################
 const N_MATRIX: usize = 2;
 //#######################################################
+
+#[derive(Debug, clap::Parser, Clone)]
+#[clap(long_about = "Adapter example")]
+struct Args {
+    /// input filename
+    /// specify input filename
+    #[clap(short, long, value_parser, verbatim_doc_comment)]
+    input_filename: String,
+    /// output filename
+    /// specify output filename
+    #[clap(short, long, value_parser, verbatim_doc_comment)]
+    output_filename: String,
+}
+
 fn main() -> Result<(), std::io::Error> {
+    let args = Args::parse();
+    let input_filename = args.input_filename;
+    let output_filename = args.output_filename;
+
     let mut prg2 = Prog1Wrap::default();
-    prg2.create_file_and_write_matrixes("somefile")?;
+    prg2.create_file_and_write_matrixes(&input_filename)?;
     // create adapter class
     let mut prg1adapt = Prog1Adapter { prog2: prg2 };
     // calculate summ
     println!("summ is {:?}", prg1adapt.calculate_sum()?);
+    prg1adapt.create_and_write_file(&output_filename)?;
     Ok(())
 }
 //newtype
@@ -25,16 +47,20 @@ struct Prog1Wrap(Prog1);
 // implement Prog2 Interface
 impl Prog2Interface for Prog1Wrap {
     type Output = Matrix<MATRIX_LINEAR_SIZE>;
-    fn create_file_and_write_matrixes(&mut self, fname: &str) -> Result<(), std::io::Error> {
+    fn create_file_and_write_matrixes(
+        &mut self,
+        fname: &str,
+    ) -> Result<Vec<Vec<i32>>, std::io::Error> {
         let cur_dir_path = env::current_dir()?; // get current dir
         let filename = cur_dir_path.join(fname);
         let opened_file = File::create(&filename)?;
         let mut writer = BufWriter::new(opened_file); // create writer
         let mut matrix_to_write = self.create_matrixes();
         let mut matrixes = matrix_to_write.write_to_writer(&mut writer, N_MATRIX);
+        let out_mtrx = matrixes.to_owned();
         self.0.assign_mtrx1(matrixes.pop().unwrap());
         self.0.assign_mtrx2(matrixes.pop().unwrap());
-        Ok(())
+        Ok(out_mtrx)
     }
 
     fn create_matrixes(&self) -> Self::Output {
@@ -57,7 +83,13 @@ impl Prog1Interface for Prog1Adapter {
     }
 
     fn create_and_write_file(&self, fname: &str) -> Result<(), std::io::Error> {
-        todo!()
+        let cur_dir_path = env::current_dir()?; // get current dir
+        let filename = cur_dir_path.join(fname);
+        let mut file_w = File::create(&filename)?;
+        for (_j, item) in self.prog2.0.mtrxSum.data.iter().enumerate() {
+            file_w.write_i32::<LittleEndian>(*item).unwrap(); // write to buffer
+        }
+        Ok(())
     }
 
     fn read_matrix<const POSITION: u64>(filebytes: &[u8]) -> Vec<i32> {
