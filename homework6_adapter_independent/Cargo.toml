@@ -1,0 +1,31 @@
+[package]
+name = "adapter_independent"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "prog_reader"
+path = "src/executables/reader.rs"
+
+[[bin]]
+name = "prog_creator"
+path = "src/executables/creator.rs"
+
+[[bin]]
+name = "prog_adapter"
+path = "src/executables/adapter.rs"
+
+
+[lib]
+name = "libmatrix"
+path = "./src/lib.rs"
+
+[dependencies]
+bytes = "1.4.0"
+hex = "0.4.3"
+postcard = { version ="1.0.4",features = ["alloc"]}
+serde = {version = "1.0.159",features =["derive"]}
+serde_with = "2.3.2"
+fastrand = "1.9.0"
+byteorder = "1.4.3"
+clap = { version = "4.2.4", features = ["derive"] }

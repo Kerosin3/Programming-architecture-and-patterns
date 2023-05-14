@@ -1,0 +1,101 @@
+[env]
+RUST_BACKTRACE = 1
+##--------------------------------------
+#formatiing
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+##--------------------------------------
+#clippy -D warnings
+[tasks.clippy]
+command = "cargo"
+args = ["clippy","--all","--all-features","--tests","--","-D","warnings"]
+dependencies = ["format"]
+
+##--------------------------------------
+#clippy simple
+[tasks.clippy-development]
+command = "cargo"
+args = ["clippy","--all","--all-features","--tests"]
+dependencies = ["format"]
+
+##--------------------------------------
+#clean
+[tasks.clean]
+command = "cargo"
+args = ["clean"]
+
+##--------------------------------------
+#build debug
+[tasks.build-dev]
+condition = { profiles = [ "development" ] }
+command = "cargo"
+args = ["build","--all-features"]
+
+##--------------------------------------
+#build release
+[tasks.build-prod]
+condition = { profiles = [ "production" ] }
+command = "cargo"
+args = ["build","--all-features","--release","-Z","unstable-options"]
+
+##--------------------------------------
+#build release linux
+[tasks.build-prod-linux]
+condition = { profiles = [ "production" ] }
+command = "cargo"
+args = ["build","--target","x86_64-unknown-linux-gnu","--all-features","--release","-Z","unstable-options"]
+
+##--------------------------------------
+#build release windows
+[tasks.build-prod-windows]
+condition = { profiles = [ "production" ] }
+command = "cross"
+args = ["build","--target","x86_64-pc-windows-gnu","--release","-Z","unstable-options"]
+
+##--------------------------------------
+# #run verbose tests
+[tasks.test]
+command = "cargo"
+args = ["test","--","--nocapture"]
+#------------------------------------
+#------------------------------------
+# #run examples
+[tasks.examples]
+command = "cargo"
+args = ["run","--","example","matrix_reader","-Z","unstable-options"]
+
+#------------------------------------
+#------------------------------------
+
+[tasks.assembly_linux]
+dependencies = [
+"build-prod-linux"
+]
+#------------------------------------
+#------------------------------------
+[tasks.assembly_windows]
+dependencies = [
+"build-prod-windows"
+]
+#------------------------------------
+#------------------------------------
+[tasks.assembly]
+dependencies = [
+#    "user",
+#    "rustc-version-flow",
+    "format",
+    "clippy",
+    {name = "build-prod", condition = ["production"] },
+    {name = "build-dev", condition = ["development"] },
+    "assembly_windows",
+    "test"
+]
+[tasks.test_all]
+dependencies = [
+#    "format",
+#    "clippy-development",
+    "test"
+]
