@@ -19,8 +19,8 @@
 - You can create file filled with two matrixes by running ``./prog_creator -o matrixes``
 - You can sum two matrixes and write result to a file by rinning ``./prog_reader -i matrixes -o sum_matrix``
 - Test ADAPTER example by running ``./prog_adapter -m matrix_files -o sum_file`` to create file ``matrix_files`` with matrixes and write sum of matrixes to ``sum_file``
-- Verify result ru running usual program ``./prog_reader -i matrix_files -o sum_matrix``
-
+- Verify result by running usual program ``./prog_reader -i matrix_files -o sum_matrix``
+- Verity that ``sum_matrix`` and ``sum_file`` contains the same binary data
 
 ## UML diagram
 
