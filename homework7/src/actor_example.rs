@@ -15,7 +15,7 @@ fn main() {
     let ping = RunnerActor::new(String::from("Bob"));
     let ping_tx = system.run(ping);
     // accept input and send msg to RunnerActor
-    let input = InputActor::new(ping_tx);
+    let input = InputActor::new(ping_tx, store);
     let input_tx = system.run(input);
 
     input_tx.send(()).unwrap();
@@ -41,13 +41,27 @@ enum Commands {
     Command3,
 }
 
+impl Actor for CommandStore {
+    type Message = Commands;
+
+    fn process_message(self, msg: Self::Message) -> Option<Self> {
+        todo!()
+    }
+}
+
 // **** INPUT ****
 
-struct InputActor(Sender<PingMessage>);
+struct InputActor {
+    cmd_store: CommandStore,
+    snd: Sender<PingMessage>,
+}
 
 impl InputActor {
-    pub fn new(ping_tx: Sender<PingMessage>) -> Self {
-        Self(ping_tx)
+    pub fn new(ping_tx: Sender<PingMessage>, cmd_s: CommandStore) -> Self {
+        Self {
+            snd: ping_tx,
+            cmd_store: cmd_s,
+        }
     }
 }
 
@@ -68,7 +82,7 @@ impl Actor for InputActor {
                 return None;
             }
 
-            self.0.send(PingMessage::new(msg)).ok()?;
+            self.snd.send(PingMessage::new(msg)).ok()?;
             thread::sleep(Duration::from_secs(1));
         }
     }
