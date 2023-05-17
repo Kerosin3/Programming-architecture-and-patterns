@@ -46,6 +46,7 @@ impl System {
         self.handles.push(jh);
         tx // return transceive endpoint
     }
+    // used to pass result to main thread
     pub fn init_result_channel(&mut self) -> Receiver<usize> {
         let (tx, rx) = mpsc::channel();
         self.tx_rez_enpoint = Some(Arc::new(tx));
