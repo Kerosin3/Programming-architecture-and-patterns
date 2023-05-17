@@ -5,21 +5,25 @@ use std::thread;
 
 fn main() {
     let mut system = System::default();
-
     let mut store = CommandStore::new();
+    store.push(Commands::Command1);
+    store.push(Commands::Command1);
+    store.push(Commands::Command1);
     store.push(Commands::Command1);
     store.push(Commands::Command2);
     store.push(Commands::CommandHardStop);
     store.push(Commands::Command3);
+    store.push(Commands::Command3);
     store.push(Commands::CommandSoftStop);
 
-    let runner_sender = RunnerActor::new(String::from("Runner"));
+    let runner_sender = RunnerActor::new();
     let runner_tx = system.run(runner_sender);
 
     let arbiter_actor = InputActor::new(runner_tx, store);
     let input_tx = system.run(arbiter_actor);
-
     input_tx.send(()).unwrap();
+    drop(system);
+    //     println!("returned: {:?}", system.results);
 }
 #[derive(Debug)]
 struct CommandStore {
@@ -68,6 +72,7 @@ impl Actor for InputActor {
     fn process_message(self, _: Self::Message) -> Option<Self> {
         let mut cmd_store_t = self.cmd_store.cmd;
         cmd_store_t.reverse();
+        // stops when all command are sended
         loop {
             while let Some(cmd) = cmd_store_t.pop() {
                 println!("reading command!");
@@ -81,11 +86,11 @@ impl Actor for InputActor {
 
 //  Command Runner
 
-struct RunnerActor(String);
+struct RunnerActor(usize);
 
 impl RunnerActor {
-    pub fn new(name: String) -> Self {
-        Self(name)
+    pub fn new() -> Self {
+        Self(0)
     }
 }
 
@@ -98,6 +103,7 @@ impl Actor for RunnerActor {
                 println!("Hardstopping!");
                 return None;
             }
+            // non sense
             Commands::CommandSoftStop => {
                 println!("Softstopping!");
                 return Some(self);
