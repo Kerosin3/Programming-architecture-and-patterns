@@ -5,6 +5,7 @@ use std::thread;
 
 fn main() {
     let mut system = System::default();
+    let recv_rez = system.init_result_channel();
     let mut store = CommandStore::new();
     store.push(Commands::Command1);
     store.push(Commands::Command1);
@@ -23,7 +24,9 @@ fn main() {
     let input_tx = system.run(arbiter_actor);
     input_tx.send(()).unwrap();
     drop(system);
-    //     println!("returned: {:?}", system.results);
+    while let Ok(rez) = recv_rez.recv() {
+        println!("returned: {:?}", rez);
+    }
 }
 #[derive(Debug)]
 struct CommandStore {
