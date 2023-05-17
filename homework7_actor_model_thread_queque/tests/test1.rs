@@ -50,7 +50,7 @@ pub mod test {
         store.push(Commands::Command1); // 3
         store.push(Commands::Command1); // 4
         store.push(Commands::Command2); // 5
-        store.push(Commands::CommandSoftStop); // 6 HARDSTOP
+        store.push(Commands::CommandSoftStop); // 6 SOFTSTOP
         store.push(Commands::Command3); // 7
         store.push(Commands::Command3); //8
         store.push(Commands::Command3); //9
