@@ -7,8 +7,10 @@ use std::time::Duration;
 fn main() {
     let mut system = System::default();
 
-    //   let pong = PongActor::new(String::from("Alice"));
-    //   let pong_tx = system.run(pong);
+    let mut store = CommandStore::new();
+    store.push(Commands::Command1);
+    store.push(Commands::Command1);
+    store.push(Commands::Command1);
 
     let ping = RunnerActor::new(String::from("Bob"));
     let ping_tx = system.run(ping);
@@ -17,6 +19,26 @@ fn main() {
     let input_tx = system.run(input);
 
     input_tx.send(()).unwrap();
+}
+#[derive(Debug)]
+struct CommandStore {
+    cmd: Vec<Commands>,
+}
+impl CommandStore {
+    fn new() -> Self {
+        Self { cmd: vec![] }
+    }
+    fn push(&mut self, cmd: Commands) {
+        self.cmd.push(cmd)
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[non_exhaustive]
+enum Commands {
+    Command1,
+    Command2,
+    Command3,
 }
 
 // **** INPUT ****
