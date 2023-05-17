@@ -1,22 +1,23 @@
 use libsystem::{Actor, System};
-use std::io::stdin;
 use std::sync::mpsc::Sender;
 use std::thread;
-use std::time::Duration;
+//use std::time::Duration;
 
 fn main() {
     let mut system = System::default();
 
     let mut store = CommandStore::new();
     store.push(Commands::Command1);
-    store.push(Commands::Command1);
-    store.push(Commands::Command1);
+    store.push(Commands::Command2);
+    store.push(Commands::CommandHardStop);
+    store.push(Commands::Command3);
+    store.push(Commands::CommandSoftStop);
 
-    let ping = RunnerActor::new(String::from("Bob"));
-    let ping_tx = system.run(ping);
-    // accept input and send msg to RunnerActor
-    let input = InputActor::new(ping_tx, store);
-    let input_tx = system.run(input);
+    let runner_sender = RunnerActor::new(String::from("Runner"));
+    let runner_tx = system.run(runner_sender);
+
+    let arbiter_actor = InputActor::new(runner_tx, store);
+    let input_tx = system.run(arbiter_actor);
 
     input_tx.send(()).unwrap();
 }
@@ -39,25 +40,19 @@ enum Commands {
     Command1,
     Command2,
     Command3,
-}
-
-impl Actor for CommandStore {
-    type Message = Commands;
-
-    fn process_message(self, msg: Self::Message) -> Option<Self> {
-        todo!()
-    }
+    CommandHardStop,
+    CommandSoftStop,
 }
 
 // **** INPUT ****
-
+// Этот актор будет кидать команды на исполнение актору
 struct InputActor {
     cmd_store: CommandStore,
-    snd: Sender<PingMessage>,
+    snd: Sender<Commands>,
 }
 
 impl InputActor {
-    pub fn new(ping_tx: Sender<PingMessage>, cmd_s: CommandStore) -> Self {
+    pub fn new(ping_tx: Sender<Commands>, cmd_s: CommandStore) -> Self {
         Self {
             snd: ping_tx,
             cmd_store: cmd_s,
@@ -71,24 +66,20 @@ impl Actor for InputActor {
     type Message = InputMessage;
 
     fn process_message(self, _: Self::Message) -> Option<Self> {
+        let mut cmd_store_t = self.cmd_store.cmd;
+        cmd_store_t.reverse();
         loop {
-            println!();
-            println!("Enter message for ping-pong:");
-            let mut msg = String::new();
-            stdin().read_line(&mut msg).ok()?;
-            let msg = msg.trim().to_string();
-
-            if msg == "exit" {
-                return None;
+            while let Some(cmd) = cmd_store_t.pop() {
+                println!("reading command!");
+                self.snd.send(cmd).ok()?;
+                println!("command has been sent to an actor");
             }
-
-            self.snd.send(PingMessage::new(msg)).ok()?;
-            thread::sleep(Duration::from_secs(1));
+            return None;
         }
     }
 }
 
-// **** PING ****
+//  Command Runner
 
 struct RunnerActor(String);
 
@@ -98,57 +89,27 @@ impl RunnerActor {
     }
 }
 
-struct PingMessage(String);
-
-impl PingMessage {
-    pub fn new(text: String) -> Self {
-        Self(text)
-    }
-
-    pub fn into_string(self) -> String {
-        self.0
-    }
-}
-
 impl Actor for RunnerActor {
-    type Message = PingMessage;
+    type Message = Commands;
 
     fn process_message(self, msg: Self::Message) -> Option<Self> {
-        let str = msg.into_string();
-        println!("ping with message: {}", str);
-        //         self.1.send(PongMessage::new(str)).ok()?;
-        Some(self)
-    }
-}
+        let rmsg = match msg {
+            Commands::CommandHardStop => {
+                println!("Hardstopping!");
+                return None;
+            }
+            Commands::CommandSoftStop => {
+                println!("Softstopping!");
+                return Some(self);
+            }
 
-// **** PONG ****
-
-struct PongActor(String);
-
-impl PongActor {
-    pub fn new(name: String) -> Self {
-        Self(name)
-    }
-}
-
-struct PongMessage(String);
-
-impl PongMessage {
-    pub fn new(text: String) -> Self {
-        Self(text)
-    }
-
-    pub fn into_string(self) -> String {
-        self.0
-    }
-}
-
-impl Actor for PongActor {
-    type Message = PongMessage;
-
-    fn process_message(self, msg: Self::Message) -> Option<Self> {
-        let str = msg.into_string();
-        println!("pong with message: {}", str);
+            _ => msg,
+        };
+        println!(
+            "[{:?}], Running command: {:?}",
+            thread::current().id(),
+            rmsg
+        );
         Some(self)
     }
 }

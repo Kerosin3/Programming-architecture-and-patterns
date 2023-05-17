@@ -34,7 +34,7 @@ impl System {
         tx // return transceive endpoint
     }
 }
-
+// cleanup
 impl Drop for System {
     /// Waits when all actors finish their work.
     fn drop(&mut self) {
