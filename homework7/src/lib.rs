@@ -9,19 +9,19 @@ pub trait Actor: Sized + Send + 'static {
     fn process_message(self, msg: Self::Message) -> Option<Self>;
 }
 
-/// Basic actor framework
 #[derive(Debug, Default)]
 pub struct System {
     handles: Vec<JoinHandle<()>>,
 }
-
+// accept actor and execute process_message method
+// returns transceive endpoint
 impl System {
-    /// Run `actor`. It'll wait for messages and process them.
-    /// Method returns channel to communicate with `actor`.
     pub fn run<A: Actor>(&mut self, actor: A) -> Sender<A::Message> {
         let (tx, rx) = mpsc::channel();
+        // create channel and spawn new thread
         let jh = thread::spawn(move || {
             let mut actor = actor;
+            // continue receive messages
             while let Ok(msg) = rx.recv() {
                 actor = match actor.process_message(msg) {
                     Some(a) => a,
@@ -31,7 +31,7 @@ impl System {
         });
         self.handles.push(jh);
 
-        tx
+        tx // return transceive endpoint
     }
 }
 

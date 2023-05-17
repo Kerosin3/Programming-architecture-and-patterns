@@ -10,9 +10,9 @@ fn main() {
     //   let pong = PongActor::new(String::from("Alice"));
     //   let pong_tx = system.run(pong);
 
-    let ping = PingActor::new(String::from("Bob"));
+    let ping = RunnerActor::new(String::from("Bob"));
     let ping_tx = system.run(ping);
-
+    // accept input and send msg to RunnerActor
     let input = InputActor::new(ping_tx);
     let input_tx = system.run(input);
 
@@ -54,9 +54,9 @@ impl Actor for InputActor {
 
 // **** PING ****
 
-struct PingActor(String);
+struct RunnerActor(String);
 
-impl PingActor {
+impl RunnerActor {
     pub fn new(name: String) -> Self {
         Self(name)
     }
@@ -74,7 +74,7 @@ impl PingMessage {
     }
 }
 
-impl Actor for PingActor {
+impl Actor for RunnerActor {
     type Message = PingMessage;
 
     fn process_message(self, msg: Self::Message) -> Option<Self> {
