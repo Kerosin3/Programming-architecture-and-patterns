@@ -9,7 +9,7 @@
 ## Usage
 
 - Use ``cargo make --profile production assembly_linux`` to assembly binaries for Linux
-- Use `` cargo make --profile production oassembly_windows`` to asembly binaries for Windows
+- Use `` cargo make --profile production assembly_windows`` to asembly binaries for Windows
 - Use ``cargo build -Z unstable-options`` to build executables with cargo
 
 * binaries can be found in ``binaries`` directory

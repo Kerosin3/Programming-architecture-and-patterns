@@ -1,0 +1,15 @@
+[package]
+name = "actor_model_queque"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "actor"
+path = "src/actor_example.rs"
+
+
+[lib]
+name = "libsystem"
+path = "./src/lib.rs"
+
+[dependencies]
