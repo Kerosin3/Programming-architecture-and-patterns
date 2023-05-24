@@ -26,7 +26,7 @@ struct Config {
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    config_path.push("src/agent/conf/conf.toml");
+    config_path.push("src/agent_processor/conf/conf.toml");
     let config: Config = Figment::new()
         .merge(Toml::file(config_path))
         .merge(Env::prefixed("CARGO_"))
@@ -46,20 +46,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await
         .unwrap();
 
-    loop {
-        let notification = eventloop.poll().await.unwrap();
-        match notification {
-            Event::Incoming(Packet::Publish(p)) => {
-                println!("Received: {:?}", p.payload);
-            }
-            Event::Outgoing(_) => {
-                println!("Outgoing");
-            }
-            _ => {
-                println!("Other");
-            }
+    task::spawn(async move {
+        for i in 0..10 {
+            client
+                .publish(
+                    subscribes.first().unwrap().clone(),
+                    QoS::AtLeastOnce,
+                    false,
+                    vec![i; i as usize],
+                )
+                .await
+                .unwrap();
+            time::sleep(Duration::from_millis(100)).await;
         }
-    }
+    });
 
+    while let Ok(notification) = eventloop.poll().await {
+        println!("Received = {:?}", notification);
+    }
+    println!("finishing");
     Ok(())
 }

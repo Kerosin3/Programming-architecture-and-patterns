@@ -1,0 +1,7 @@
+[agent_settings]
+name = "agent0"
+version = "0.1.0"
+subscribes = ["service1"]
+host = "localhost"
+port = 1883
+
