@@ -7,8 +7,12 @@ use serde::Deserialize;
 use std::error::Error;
 use std::path::Path;
 use std::path::PathBuf;
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 use tokio::{task, time};
+//----------------------------
+mod msg;
+use msg::*;
+//----------------------------
 
 #[derive(Deserialize, Debug)]
 struct Agent_settings {
@@ -48,12 +52,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     task::spawn(async move {
         for i in 0..10 {
+            let message = Message {
+                i,
+                time: SystemTime::now(),
+            };
             client
                 .publish(
                     subscribes.first().unwrap().clone(),
                     QoS::AtLeastOnce,
                     false,
-                    vec![i; i as usize],
+                    message,
                 )
                 .await
                 .unwrap();
