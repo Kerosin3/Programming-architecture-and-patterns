@@ -3,29 +3,15 @@ use figment::{
     Figment, Source,
 };
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use std::error::Error;
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime};
 use tokio::{task, time};
-//----------------------------
-mod msg;
-use msg::*;
-//----------------------------
 
-#[derive(Deserialize, Debug)]
-struct Agent_settings {
-    name: String,
-    version: String,
-    subscribes: Vec<String>,
-    host: String,
-    port: isize,
-}
-#[derive(Deserialize, Debug)]
-struct Config {
-    agent_settings: Agent_settings,
-}
+use templates::*;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -52,16 +38,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     task::spawn(async move {
         for i in 0..10 {
-            let message = Message {
-                i,
-                time: SystemTime::now(),
+            let mut json: Mydata = Mydata {
+                data: "bebebe".to_string(),
+                iter: i,
             };
+            let json_string = serde_json::to_vec(&json).unwrap();
+
             client
                 .publish(
                     subscribes.first().unwrap().clone(),
                     QoS::AtLeastOnce,
                     false,
-                    message,
+                    json_string,
                 )
                 .await
                 .unwrap();
@@ -74,4 +62,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     println!("finishing");
     Ok(())
+}
+#[derive(Deserialize, Debug)]
+struct Agent_settings {
+    name: String,
+    version: String,
+    subscribes: Vec<String>,
+    host: String,
+    port: isize,
+}
+#[derive(Deserialize, Debug)]
+struct Config {
+    agent_settings: Agent_settings,
 }
