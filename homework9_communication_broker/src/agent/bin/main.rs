@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 use templates::*;
 use tokio::{task, time};
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
