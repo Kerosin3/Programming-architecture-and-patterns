@@ -38,22 +38,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     task::spawn(async move {
         for i in 0..10 {
-            /*           let mut json: Mydata = Mydata {
-                            data: "bebebe".to_string(),
-                            iter: i,
-                        };
-                        let json_string = serde_json::to_vec(&json).unwrap();
-            */
-            let s = Sender("test_text".to_string());
-            let my_data = Mydata { operation: s };
-
-            let x = my_data.operation.new();
+            let data_to_send = Payload::new(1, OperationObj::Test("testmsg".to_string()));
+            let container = SenderContainer(data_to_send);
             client
                 .publish(
                     subscribes.first().unwrap().clone(),
                     QoS::AtLeastOnce,
                     false,
-                    my_data.operation.metamorphose(),
+                    container.transform_to_send(),
                 )
                 .await
                 .unwrap();
@@ -66,22 +58,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
     println!("finishing");
     Ok(())
-}
-
-struct Sender(String);
-
-impl OperationConstructor for Sender {
-    // assign String
-    fn new(&self) -> OperationObj {
-        OperationObj::Test(self.0.to_owned())
-    }
-}
-
-impl OperationSender for Sender {
-    // convert to json
-    fn metamorphose(&self) -> Vec<u8> {
-        serde_json::to_vec(&self.new()).unwrap()
-    }
 }
 
 #[derive(Deserialize, Debug)]

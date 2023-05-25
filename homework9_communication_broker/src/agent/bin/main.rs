@@ -40,7 +40,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(p)) => {
-                let x: Mydata = serde_json::from_slice(&p.payload.to_vec()).unwrap();
+                let x: Payload = serde_json::from_slice(&p.payload.to_vec()).unwrap();
                 println!("json is {:?}", x);
             }
             /*
