@@ -6,12 +6,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [[bin]]
-name = "agent_processor"
-path = "src/agent_processor/bin/main.rs"
+name = "agent_sender"
+path = "src/agent_sender/bin/main.rs"
 
 [[bin]]
-name = "agent"
-path = "src/agent/bin/main.rs"
+name = "agent_processor"
+path = "src/agent_processor/bin/main.rs"
 
 [lib]
 name = "templates"

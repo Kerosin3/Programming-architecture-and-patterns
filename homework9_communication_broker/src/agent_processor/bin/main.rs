@@ -3,15 +3,16 @@ use figment::{
     Figment, Source,
 };
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
+use serde::Serialize;
 use serde_json::Value;
 use std::error::Error;
 use std::path::Path;
 use std::path::PathBuf;
-use std::time::{Duration, SystemTime};
-use tokio::{task, time};
-
+use std::time::Duration;
+use templates::sender::*;
 use templates::*;
+use tokio::{task, time};
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -36,32 +37,31 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await
         .unwrap();
 
-    task::spawn(async move {
-        for i in 0..10 {
-            let data_to_send = Payload::new(1, OperationObj::Test("testmsg".to_string()));
-            let container = SenderContainer(data_to_send);
-            client
-                .publish(
-                    subscribes.first().unwrap().clone(),
-                    QoS::AtLeastOnce,
-                    false,
-                    container.transform_to_send(),
-                )
-                .await
-                .unwrap();
-            time::sleep(Duration::from_millis(100)).await;
+    loop {
+        let notification = eventloop.poll().await.unwrap();
+        match notification {
+            Event::Incoming(Packet::Publish(p)) => {
+                let x: Payload = serde_json::from_slice(&p.payload.to_vec()).unwrap();
+                println!("json is {:?}", x);
+            }
+            /*
+            Event::Incoming(Packet::Publish(p)) => {
+                println!("Received: {:?}", p.payload);
+            }*/
+            Event::Outgoing(_) => {
+                println!("Outgoing");
+            }
+            _ => {
+                println!("Other");
+            }
         }
-    });
-
-    while let Ok(notification) = eventloop.poll().await {
-        println!("Received = {:?}", notification);
     }
-    println!("finishing");
+
     Ok(())
 }
 
 #[derive(Deserialize, Debug)]
-struct Agent_settings {
+struct AgentSettings {
     name: String,
     version: String,
     subscribes: Vec<String>,
@@ -70,5 +70,5 @@ struct Agent_settings {
 }
 #[derive(Deserialize, Debug)]
 struct Config {
-    agent_settings: Agent_settings,
+    agent_settings: AgentSettings,
 }

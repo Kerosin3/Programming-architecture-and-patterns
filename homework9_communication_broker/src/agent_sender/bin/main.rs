@@ -3,20 +3,21 @@ use figment::{
     Figment, Source,
 };
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
-use serde::Deserialize;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::error::Error;
 use std::path::Path;
 use std::path::PathBuf;
-use std::time::Duration;
-use templates::*;
+use std::time::{Duration, SystemTime};
 use tokio::{task, time};
+
+use templates::sender::*;
+use templates::*;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    config_path.push("src/agent/conf/conf.toml");
+    config_path.push("src/agent_sender/conf/conf.toml");
     let config: Config = Figment::new()
         .merge(Toml::file(config_path))
         .merge(Env::prefixed("CARGO_"))
@@ -24,7 +25,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //     dbg!(config);
     let mut subscribes = config.agent_settings.subscribes.to_owned();
     let mut mqttoptions = MqttOptions::new(
-        config.agent_settings.name,
+        config.agent_settings.name.to_owned(),
         config.agent_settings.host,
         config.agent_settings.port as u16,
     );
@@ -35,32 +36,34 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .subscribe(subscribes.first().unwrap().clone(), QoS::AtMostOnce)
         .await
         .unwrap();
-
-    loop {
-        let notification = eventloop.poll().await.unwrap();
-        match notification {
-            Event::Incoming(Packet::Publish(p)) => {
-                let x: Payload = serde_json::from_slice(&p.payload.to_vec()).unwrap();
-                println!("json is {:?}", x);
-            }
-            /*
-            Event::Incoming(Packet::Publish(p)) => {
-                println!("Received: {:?}", p.payload);
-            }*/
-            Event::Outgoing(_) => {
-                println!("Outgoing");
-            }
-            _ => {
-                println!("Other");
-            }
+    let username = config.agent_settings.name.to_owned();
+    task::spawn(async move {
+        for i in 0..10 {
+            let data_to_send =
+                Payload::new(username.clone(), OperationObj::Test("testmsg".to_string()));
+            let container = SenderContainer(data_to_send);
+            client
+                .publish(
+                    subscribes.first().unwrap().clone(),
+                    QoS::AtLeastOnce,
+                    false,
+                    container.transform_to_send(),
+                )
+                .await
+                .unwrap();
+            time::sleep(Duration::from_millis(100)).await;
         }
-    }
+    });
 
+    while let Ok(notification) = eventloop.poll().await {
+        println!("Received = {:?}", notification);
+    }
+    println!("finishing");
     Ok(())
 }
 
 #[derive(Deserialize, Debug)]
-struct Agent_settings {
+struct AgentSettings {
     name: String,
     version: String,
     subscribes: Vec<String>,
@@ -69,5 +72,5 @@ struct Agent_settings {
 }
 #[derive(Deserialize, Debug)]
 struct Config {
-    agent_settings: Agent_settings,
+    agent_settings: AgentSettings,
 }
