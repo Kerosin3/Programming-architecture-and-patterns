@@ -51,7 +51,6 @@ impl RecvDataInterface for RecvWrapper {
 
 impl std::fmt::Display for RecvWrapper {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        //         f.debug_tuple("RecvWrapper").field(&self.0).finish()
         write!(
             f,
             "username: {}\ngameid:{},object id {}\noperation {:?}\ntimestamp:{}\ndebug:{}\nARGS:[{:?}]",
