@@ -39,8 +39,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let username = config.agent_settings.name.to_owned();
     task::spawn(async move {
         for i in 0..10 {
-            let data_to_send =
-                Payload::new(username.clone(), OperationObj::Test("testmsg".to_string()));
+            //             let data_to_send =
+            //                 Payload::new(username.clone(), OperationObj::Test("testmsg".to_string()));
+            let data_to_send = Payload::new(username.clone(), OperationObj::create_play());
+
             let container = SenderContainer(data_to_send);
             client
                 .publish(
