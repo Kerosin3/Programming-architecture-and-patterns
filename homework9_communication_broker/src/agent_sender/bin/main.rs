@@ -13,6 +13,8 @@ use tokio::{task, time};
 
 use templates::sender::*;
 use templates::*;
+mod sender_implement;
+use sender_implement::*;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -39,17 +41,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let username = config.agent_settings.name.to_owned();
     task::spawn(async move {
         for i in 0..10 {
-            //             let data_to_send =
-            //                 Payload::new(username.clone(), OperationObj::Test("testmsg".to_string()));
-            let data_to_send = Payload::new(username.clone(), OperationObj::create_play());
+            let data_to_send = SenderDataContainer::new(
+                1,
+                1,
+                username.to_owned(),
+                OperationAdapter(Box::new(Playgame())),
+            )
+            .transform_to_send();
 
-            let container = SenderContainer(data_to_send);
             client
                 .publish(
                     subscribes.first().unwrap().clone(),
                     QoS::AtLeastOnce,
                     false,
-                    container.transform_to_send(),
+                    data_to_send,
                 )
                 .await
                 .unwrap();

@@ -41,8 +41,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(p)) => {
-                let x: Payload = serde_json::from_slice(&p.payload.to_vec()).unwrap();
-                println!("json is {:?}", x);
+                let data: Result<SenderDataContainer, serde_json::Error> =
+                    serde_json::from_slice(&p.payload.to_vec());
+                match data {
+                    Ok(d) => {
+                        println!("json is {:?}", d);
+                    }
+                    Err(e) => {
+                        println!("error while deserializing! err: {}", e);
+                    }
+                }
             }
             /*
             Event::Incoming(Packet::Publish(p)) => {
