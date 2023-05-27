@@ -10,9 +10,10 @@ use std::error::Error;
 use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
-use templates::sender::*;
-use templates::*;
 use tokio::{task, time};
+mod implement;
+use implement::*;
+use templates::data_exchange::recv_interface::RecvDataInterface;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -23,7 +24,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .merge(Env::prefixed("CARGO_"))
         .extract()?;
     //     dbg!(config);
-    let mut subscribes = config.agent_settings.subscribes.to_owned();
+    let subscribes = config.agent_settings.subscribes.to_owned();
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name,
         config.agent_settings.host,
@@ -41,11 +42,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(p)) => {
-                let data: Result<SenderDataContainer, serde_json::Error> =
-                    serde_json::from_slice(&p.payload.to_vec());
-                match data {
+                let recv_data = RecvWrapper::deserialize_data(p);
+                match recv_data {
                     Ok(d) => {
-                        println!("json is {:?}", d);
+                        println!("command {}", d)
                     }
                     Err(e) => {
                         println!("error while deserializing! err: {}", e);

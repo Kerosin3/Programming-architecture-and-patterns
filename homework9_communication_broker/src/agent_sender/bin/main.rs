@@ -1,20 +1,18 @@
 use figment::{
-    providers::{Env, Format, Json, Toml},
-    Figment, Source,
+    providers::{Env, Format, Toml},
+    Figment,
 };
-use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use rumqttc::{AsyncClient, MqttOptions, QoS};
+use serde::Deserialize;
 use std::error::Error;
-use std::path::Path;
 use std::path::PathBuf;
-use std::time::{Duration, SystemTime};
+use std::time::Duration;
 use tokio::{task, time};
 
-use templates::sender::*;
-use templates::*;
-mod sender_implement;
-use sender_implement::*;
+use templates::data_exchange::sender_interface::SenderDataInterface;
+use templates::data_exchange::OperationObj;
+mod implement;
+use implement::SenderWrapper;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -25,7 +23,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .merge(Env::prefixed("CARGO_"))
         .extract()?;
     //     dbg!(config);
-    let mut subscribes = config.agent_settings.subscribes.to_owned();
+    let subscribes = config.agent_settings.subscribes.to_owned();
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.to_owned(),
         config.agent_settings.host,
@@ -35,20 +33,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     client
-        .subscribe(subscribes.first().unwrap().clone(), QoS::AtMostOnce)
+        .subscribe(subscribes.first().unwrap().clone(), QoS::AtLeastOnce)
         .await
         .unwrap();
     let username = config.agent_settings.name.to_owned();
     task::spawn(async move {
-        for i in 0..10 {
-            let data_to_send = SenderDataContainer::new(
-                1,
-                1,
-                username.to_owned(),
-                OperationAdapter(Box::new(Playgame())),
-            )
-            .transform_to_send();
-
+        for _i in 0..10 {
+            let data_to_send = SenderWrapper::default();
+            let data_to_send = data_to_send
+                .assign_gameid(1)
+                .assign_obj_id(10)
+                .assign_name(&username)
+                .assign_operation(OperationObj::Auth)
+                .assign_arg("arg1".to_string().as_ref())
+                .assign_arg("arg2".to_string().as_ref())
+                .assign_timestamp()
+                .assign_dbg(_i as isize)
+                .transform_to_send();
             client
                 .publish(
                     subscribes.first().unwrap().clone(),
@@ -68,7 +69,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     println!("finishing");
     Ok(())
 }
-
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct AgentSettings {
     name: String,
