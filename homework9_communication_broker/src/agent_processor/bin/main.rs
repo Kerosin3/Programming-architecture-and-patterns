@@ -1,3 +1,4 @@
+use ddi::*;
 use figment::{
     providers::{Env, Format, Json, Toml},
     Figment, Source,
@@ -14,6 +15,7 @@ use tokio::{task, time};
 mod implement;
 use implement::*;
 use templates::data_exchange::recv_interface::RecvDataInterface;
+use templates::data_exchange::OperationObj;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -45,7 +47,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 let recv_data = RecvWrapper::deserialize_data(p);
                 match recv_data {
                     Ok(d) => {
-                        println!("command {}", d)
+                        println!("command {:?},args: {:?}", d.get_operation(), d.get_args());
+                        let cmd = d.get_args().first().unwrap().to_owned();
+                        let mut services = ServiceCollection::new();
                     }
                     Err(e) => {
                         println!("error while deserializing! err: {}", e);

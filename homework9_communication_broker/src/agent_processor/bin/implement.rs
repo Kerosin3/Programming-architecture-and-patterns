@@ -20,23 +20,23 @@ impl RecvWrapper {
     }
 }
 impl RecvDataInterface for RecvWrapper {
-    fn get_gameid(&mut self) -> isize {
+    fn get_gameid(&self) -> isize {
         self.0.gameid
     }
 
-    fn get_obj_id(&mut self) -> isize {
+    fn get_obj_id(&self) -> isize {
         self.0.objectid
     }
 
-    fn get_name(&mut self) -> &str {
+    fn get_name(&self) -> &str {
         &self.0.username
     }
 
-    fn get_args(&mut self) -> Vec<String> {
+    fn get_args(&self) -> Vec<String> {
         self.0.args.to_owned()
     }
 
-    fn get_operation(&mut self) -> OperationObj {
+    fn get_operation(&self) -> OperationObj {
         self.0.operation.to_owned()
     }
 

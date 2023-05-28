@@ -44,7 +44,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .assign_gameid(1)
                 .assign_obj_id(10)
                 .assign_name(&username)
-                .assign_operation(OperationObj::Auth)
+                .assign_operation(OperationObj::Dgb)
                 .assign_arg("arg1".to_string().as_ref())
                 .assign_arg("arg2".to_string().as_ref())
                 .assign_timestamp()

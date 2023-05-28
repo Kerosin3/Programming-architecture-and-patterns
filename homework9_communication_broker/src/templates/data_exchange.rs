@@ -32,11 +32,11 @@ pub mod sender_interface {
 pub mod recv_interface {
     use super::OperationObj;
     pub trait RecvDataInterface: Sized {
-        fn get_gameid(&mut self) -> isize;
-        fn get_obj_id(&mut self) -> isize;
-        fn get_name(&mut self) -> &str;
-        fn get_args(&mut self) -> Vec<String>;
-        fn get_operation(&mut self) -> OperationObj;
+        fn get_gameid(&self) -> isize;
+        fn get_obj_id(&self) -> isize;
+        fn get_name(&self) -> &str;
+        fn get_args(&self) -> Vec<String>;
+        fn get_operation(&self) -> OperationObj;
         fn get_timestamp(&self) -> String;
         fn get_dbg(&self) -> isize;
     }
@@ -50,11 +50,12 @@ pub enum OperationObj {
     Auth,
     Play,
     Test(String),
+    Dgb,
 }
 
 impl std::default::Default for OperationObj {
     fn default() -> Self {
-        Self::Auth
+        Self::Dgb
     }
 }
 
