@@ -13,6 +13,10 @@ path = "src/agent_sender/bin/main.rs"
 name = "agent_processor"
 path = "src/agent_processor/bin/main.rs"
 
+[[bin]]
+name = "agent_gameserver"
+path = "src/agent_gameserver/bin/main.rs"
+
 [lib]
 name = "templates"
 path = "src/templates/lib.rs"

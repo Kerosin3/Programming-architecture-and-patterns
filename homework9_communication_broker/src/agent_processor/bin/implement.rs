@@ -18,7 +18,7 @@ impl<U: Default + Num + Copy> Default for RecvWrapper<U> {
 }
 
 impl<T: Default + Num + serde::de::DeserializeOwned + Copy> RecvWrapper<T> {
-    pub fn deserialize_data(data: Publish) -> Result<Self, serde_json::Error> {
+    pub fn deserialize_data(data: &Publish) -> Result<Self, serde_json::Error> {
         let recv_data: Result<DataContainer<T>, serde_json::Error> =
             serde_json::from_slice(&data.payload.to_vec());
         match recv_data {

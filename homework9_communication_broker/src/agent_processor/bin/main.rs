@@ -14,6 +14,7 @@ use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
 mod processor;
 use processor::*;
+use tokio::{task, time};
 //-------------------------------------------
 
 //-------------------------------------------
@@ -22,31 +23,44 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // read agent config
     let mut config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     config_path.push("src/agent_processor/conf/conf.toml");
-    let config: Config = Figment::new()
+    let mut config: Config = Figment::new()
         .merge(Toml::file(config_path))
         .merge(Env::prefixed("CARGO_"))
         .extract()?;
     //     dbg!(config);
     // setup mtqq broker
-    let subscribes = config.agent_settings.subscribes.to_owned();
+    config.agent_settings.subscribes.reverse();
+    let agent_player = config.agent_settings.subscribes.pop().unwrap();
+    let game_server = config.agent_settings.subscribes.pop().unwrap();
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name,
         config.agent_settings.host,
         config.agent_settings.port as u16,
     );
-    mqttoptions.set_keep_alive(Duration::from_secs(60));
-
-    let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
+    mqttoptions
+        .set_keep_alive(Duration::from_secs(60))
+        .set_manual_acks(true)
+        .set_clean_session(true);
+    //initialize agent player
+    let (client, mut eventloop) = AsyncClient::new(mqttoptions.to_owned(), 10);
     client
-        .subscribe(subscribes.first().unwrap().clone(), QoS::AtLeastOnce)
+        .subscribe(agent_player, QoS::AtLeastOnce)
         .await
         .unwrap();
+    //initialize gameserver
+    let (client_gameserver, mut eventloop_gameserver) = AsyncClient::new(mqttoptions, 10);
+    client
+        .subscribe(game_server, QoS::AtLeastOnce)
+        .await
+        .unwrap();
+
     // begin eventloop
+
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(p)) => {
-                let recv_data = RecvWrapper::<usize>::deserialize_data(p);
+                let recv_data = RecvWrapper::<usize>::deserialize_data(&p);
                 match recv_data {
                     Ok(d) => {
                         //black magic
@@ -87,6 +101,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         let cmd_server_transform: ServerCommand = (*cmd_to_server).clone().into();
                         println!("--------->{:?}", cmd_server_transform);
                         //pass to gameserver
+                        //acknowledge to client
+                        let c = client.clone();
+                        tokio::spawn(async move {
+                            c.ack(&p).await.unwrap();
+                        });
                     }
                     Err(e) => {
                         println!("error while deserializing! err: {}", e);

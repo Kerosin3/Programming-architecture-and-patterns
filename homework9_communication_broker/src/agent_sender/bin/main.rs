@@ -32,7 +32,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         config.agent_settings.host,
         config.agent_settings.port as u16,
     );
-    mqttoptions.set_keep_alive(Duration::from_secs(60));
+    mqttoptions
+        .set_keep_alive(Duration::from_secs(60))
+        .set_manual_acks(true)
+        .set_clean_session(true);
     // setup eventloop
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     client
