@@ -1,26 +1,37 @@
+use super::args::*;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
+use std::default::Default;
 //-------SENDER----------------------------
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub struct DataContainer {
+pub struct DataContainer<X: num::Num + std::default::Default> {
     pub username: String,
     pub gameid: isize,
     pub objectid: isize,
     pub operation: OperationObj,
-    pub args: Vec<String>,
+    pub args: BTreeMap<usize, Argument<X>>,
     pub timestamp: String,
     pub dbg: isize,
 }
 
 //Sender Interface
 pub mod sender_interface {
+    use super::Argument;
     use super::OperationObj;
-    pub trait SenderDataInterface: Sized {
+    use anyhow::Result;
+    use num::Num;
+    use std::default::Default;
+
+    pub trait SenderDataInterface<X>: Sized
+    where
+        X: Num + Default,
+    {
         fn transform_to_send(&self) -> Vec<u8>;
         fn assign_gameid(self, id: isize) -> Self;
         fn assign_obj_id(self, id: isize) -> Self;
         fn assign_name(self, name: &str) -> Self;
-        fn assign_arg(self, arg: &str) -> Self;
+        fn assign_arg(self, arg_id: usize, arg: Argument<X>) -> Self;
         fn assign_operation(self, operation: OperationObj) -> Self;
         fn assign_timestamp(self) -> Self;
         fn assign_dbg(self, dbg: isize) -> Self;
@@ -30,15 +41,32 @@ pub mod sender_interface {
 //------------------------------------------------
 //Receiver Interface
 pub mod recv_interface {
+    use super::Argument;
     use super::OperationObj;
-    pub trait RecvDataInterface: Sized {
+    use anyhow::Result;
+    use num::Num;
+    use std::default::Default;
+
+    pub trait RecvDataInterface<X>: Sized
+    where
+        X: Default + Num,
+    {
         fn get_gameid(&self) -> isize;
         fn get_obj_id(&self) -> isize;
         fn get_name(&self) -> &str;
-        fn get_args(&self) -> Vec<String>;
+        fn get_args(&self, id: usize) -> Result<&Argument<X>>;
         fn get_operation(&self) -> OperationObj;
         fn get_timestamp(&self) -> String;
         fn get_dbg(&self) -> isize;
+    }
+
+    #[derive(thiserror::Error, Debug, Clone)]
+    #[non_exhaustive]
+    pub enum ErrorR {
+        #[error("Internal error.")]
+        Internal(String),
+        #[error("Error getting arg")]
+        ErrorArg,
     }
 }
 

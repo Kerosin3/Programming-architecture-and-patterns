@@ -1,17 +1,19 @@
 use chrono::prelude::*;
+use templates::args::Argument;
 use templates::data_exchange::sender_interface::SenderDataInterface;
 use templates::data_exchange::DataContainer;
 use templates::data_exchange::OperationObj;
+pub struct SenderWrapper<Z: num::Num + std::default::Default>(DataContainer<Z>);
 
-pub struct SenderWrapper(DataContainer);
-
-impl std::default::Default for SenderWrapper {
+impl<T: num::Num + std::default::Default> std::default::Default for SenderWrapper<T> {
     fn default() -> Self {
         Self(DataContainer::default())
     }
 }
 
-impl SenderDataInterface for SenderWrapper {
+impl<U: num::Num + serde::Serialize + std::default::Default> SenderDataInterface<U>
+    for SenderWrapper<U>
+{
     fn transform_to_send(&self) -> Vec<u8> {
         serde_json::to_vec(&self.0).unwrap() // echeck error
     }
@@ -30,9 +32,9 @@ impl SenderDataInterface for SenderWrapper {
         self.0.username = name.to_string().to_owned();
         self
     }
-
-    fn assign_arg(mut self, arg: &str) -> Self {
-        self.0.args.push(arg.to_string().to_owned());
+    //test if ok
+    fn assign_arg(mut self, arg_id: usize, arg: Argument<U>) -> Self {
+        self.0.args.insert(arg_id, arg.finallize());
         self
     }
 

@@ -9,10 +9,12 @@ use std::path::PathBuf;
 use std::time::Duration;
 use tokio::{task, time};
 
+use templates::args::Argument;
 use templates::data_exchange::sender_interface::SenderDataInterface;
 use templates::data_exchange::OperationObj;
 mod implement;
 use implement::SenderWrapper;
+use num::Num;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -39,14 +41,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let username = config.agent_settings.name.to_owned();
     task::spawn(async move {
         for _i in 0..10 {
+            let arg0 = Argument::default()
+                .assign_num(_i)
+                .assign_string("some".to_string())
+                .finallize();
+            let arg1 = Argument::default()
+                .assign_num(_i)
+                .assign_string("some1".to_string())
+                .finallize();
+
             let data_to_send = SenderWrapper::default();
             let data_to_send = data_to_send
                 .assign_gameid(1)
                 .assign_obj_id(10)
                 .assign_name(&username)
                 .assign_operation(OperationObj::Dgb)
-                .assign_arg("arg1".to_string().as_ref())
-                .assign_arg("arg2".to_string().as_ref())
+                .assign_arg(0, arg0)
+                .assign_arg(1, arg1)
                 .assign_timestamp()
                 .assign_dbg(_i as isize)
                 .transform_to_send();

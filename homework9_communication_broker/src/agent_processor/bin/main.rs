@@ -44,12 +44,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(p)) => {
-                let recv_data = RecvWrapper::deserialize_data(p);
+                let recv_data = RecvWrapper::<i32>::deserialize_data(p);
                 match recv_data {
                     Ok(d) => {
-                        println!("command {:?},args: {:?}", d.get_operation(), d.get_args());
-                        let cmd = d.get_args().first().unwrap().to_owned();
-                        let mut services = ServiceCollection::new();
+                        println!(
+                            "command {:?},args: {:?}",
+                            d.get_operation(),
+                            d.get_args(0).unwrap()
+                        );
                     }
                     Err(e) => {
                         println!("error while deserializing! err: {}", e);
