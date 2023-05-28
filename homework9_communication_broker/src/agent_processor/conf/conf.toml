@@ -1,7 +1,7 @@
 [agent_settings]
-name = "agent0"
+name = "agent_bridge_processor"
 version = "0.1.0"
-subscribes = ["service1"]
+subscribes = ["bridge_processor"]
 host = "localhost"
 port = 1883
 
