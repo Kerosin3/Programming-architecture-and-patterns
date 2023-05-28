@@ -31,10 +31,18 @@ pub mod sender_interface {
         fn assign_gameid(self, id: isize) -> Self;
         fn assign_obj_id(self, id: isize) -> Self;
         fn assign_name(self, name: &str) -> Self;
-        fn assign_arg(self, arg_id: usize, arg: Argument<X>) -> Self;
+        fn assign_arg(self, arg_id: usize, arg: Argument<X>) -> Result<Self, ErrorS>;
         fn assign_operation(self, operation: OperationObj) -> Self;
         fn assign_timestamp(self) -> Self;
         fn assign_dbg(self, dbg: isize) -> Self;
+    }
+    #[derive(thiserror::Error, Debug, Clone)]
+    #[non_exhaustive]
+    pub enum ErrorS {
+        #[error("Internal error.")]
+        Internal(String),
+        #[error("Error setting arg")]
+        ErrorArg,
     }
 }
 
@@ -43,7 +51,6 @@ pub mod sender_interface {
 pub mod recv_interface {
     use super::Argument;
     use super::OperationObj;
-    use anyhow::Result;
     use num::Num;
     use std::default::Default;
 
@@ -54,7 +61,7 @@ pub mod recv_interface {
         fn get_gameid(&self) -> isize;
         fn get_obj_id(&self) -> isize;
         fn get_name(&self) -> &str;
-        fn get_args(&self, id: usize) -> Result<&Argument<X>>;
+        fn get_args(&self, id: usize) -> Result<&Argument<X>, ErrorR>;
         fn get_operation(&self) -> OperationObj;
         fn get_timestamp(&self) -> String;
         fn get_dbg(&self) -> isize;

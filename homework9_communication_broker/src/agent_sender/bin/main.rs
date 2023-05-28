@@ -57,7 +57,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .assign_name(&username)
                 .assign_operation(OperationObj::Dgb)
                 .assign_arg(0, arg0)
+                .unwrap()
                 .assign_arg(1, arg1)
+                .unwrap()
                 .assign_timestamp()
                 .assign_dbg(_i as isize)
                 .transform_to_send();

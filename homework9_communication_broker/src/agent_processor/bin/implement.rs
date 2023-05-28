@@ -52,11 +52,8 @@ impl<T: Default + Num + Debug> RecvDataInterface<T> for RecvWrapper<T> {
         self.0.dbg
     }
 
-    fn get_args(&self, id: usize) -> Result<&Argument<T>> {
-        self.0
-            .args
-            .get(&id)
-            .ok_or(anyhow::anyhow!("cannot get arg"))
+    fn get_args(&self, id: usize) -> Result<&Argument<T>, ErrorR> {
+        self.0.args.get(&id).ok_or(ErrorR::ErrorArg)
     }
 }
 

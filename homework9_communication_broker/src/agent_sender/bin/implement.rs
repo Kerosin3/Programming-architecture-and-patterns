@@ -1,5 +1,6 @@
 use chrono::prelude::*;
 use templates::args::Argument;
+use templates::data_exchange::sender_interface::ErrorS;
 use templates::data_exchange::sender_interface::SenderDataInterface;
 use templates::data_exchange::DataContainer;
 use templates::data_exchange::OperationObj;
@@ -32,10 +33,11 @@ impl<U: num::Num + serde::Serialize + std::default::Default> SenderDataInterface
         self.0.username = name.to_string().to_owned();
         self
     }
-    //test if ok
-    fn assign_arg(mut self, arg_id: usize, arg: Argument<U>) -> Self {
-        self.0.args.insert(arg_id, arg.finallize());
-        self
+    fn assign_arg(mut self, arg_id: usize, arg: Argument<U>) -> Result<Self, ErrorS> {
+        match self.0.args.insert(arg_id, arg.finallize()) {
+            None => Ok(self),
+            Some(_) => Err(ErrorS::ErrorArg),
+        }
     }
 
     fn assign_operation(mut self, operation: OperationObj) -> Self {
