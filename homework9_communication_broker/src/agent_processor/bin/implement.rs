@@ -62,6 +62,17 @@ impl<T: Default + Num + Debug + Copy> RecvDataInterface<T> for RecvWrapper<T> {
             arg.try_get_string().ok_or(ErrorR::EmptyVariant)?,
         ))
     }
+
+    fn get_all_args_pairs(&self) -> Result<Vec<(usize, String)>, ErrorR> {
+        let mut out = vec![];
+        for (k, v) in self.0.args.iter() {
+            out.push((*k, v.try_get_string().ok_or(ErrorR::EmptyVariant)?))
+        }
+        if out.is_empty() {
+            return Err(ErrorR::EmptyVariant);
+        }
+        Ok(out)
+    }
 }
 
 impl<U: Default + Num + Debug + Copy> std::fmt::Display for RecvWrapper<U> {

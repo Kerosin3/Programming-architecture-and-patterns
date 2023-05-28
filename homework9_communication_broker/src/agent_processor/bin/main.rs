@@ -1,26 +1,25 @@
 use ddi::*;
 use figment::{
-    providers::{Env, Format, Json, Toml},
-    Figment, Source,
+    providers::{Env, Format, Toml},
+    Figment,
 };
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
 use serde::Deserialize;
-use serde::Serialize;
-use serde_json::Value;
 use std::error::Error;
-use std::path::Path;
 use std::path::PathBuf;
 use std::time::Duration;
-use tokio::{task, time};
 mod implement;
 use implement::*;
 use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
 mod processor;
 use processor::*;
+//-------------------------------------------
 
+//-------------------------------------------
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
+    // read agent config
     let mut config_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     config_path.push("src/agent_processor/conf/conf.toml");
     let config: Config = Figment::new()
@@ -28,6 +27,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .merge(Env::prefixed("CARGO_"))
         .extract()?;
     //     dbg!(config);
+    // setup mtqq broker
     let subscribes = config.agent_settings.subscribes.to_owned();
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name,
@@ -36,12 +36,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     );
     mqttoptions.set_keep_alive(Duration::from_secs(60));
 
-    let (mut client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
+    let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     client
-        .subscribe(subscribes.first().unwrap().clone(), QoS::AtMostOnce)
+        .subscribe(subscribes.first().unwrap().clone(), QoS::AtLeastOnce)
         .await
         .unwrap();
-    let mut jk = 0_usize;
+    // begin eventloop
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
@@ -52,32 +52,41 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         //black magic
                         let mut services = ServiceCollection::new();
                         services.service(d.get_operation()); // get operation type
-                        let Ok(arg_0) = d.get_args(0) else { // take zero arg
+                        let Ok(argz) = d.get_all_args_pairs() else { // Vector of all args 
                             println!("error getting arg!");
                             continue;
                         };
-                        services.service(arg_0.0); // register number
-                                                   // setup factory Operation and arg (number)
-                        services.service_factory(|cmd: &OperationObj, uval: &usize| {
-                            Ok(ServerCommand {
-                                cmd: *cmd,
-                                arg: *uval,
-                            })
+                        //register number
+                        services.service(argz);
+                        //register agent info
+                        services.service(AgentInfo {
+                            username: d.get_name().to_owned(),
+                            gameid: d.get_gameid(),
+                            objectid: d.get_obj_id(),
                         });
+                        /* setup factory */
+                        services.service_factory(
+                            |cmd: &OperationObj, arg: &Vec<(usize, String)>, info: &AgentInfo| {
+                                Ok({
+                                    AgentCommand {
+                                        cmd: *cmd,
+                                        arg: arg.clone(),
+                                        info: info.clone(),
+                                    }
+                                })
+                            },
+                        );
+                        //extract injected structure
                         let provider = services.provider();
-                        let Ok(cmd_to_server) = provider.get::<ServerCommand>() else {
+                        // test
+                        let Ok(cmd_to_server) = provider.get::<AgentCommand>() else {
                             println!("error while resolvig command!");
                             continue;
                         };
                         //resolve command and inject into server command
-                        let game_server_cmd = GameServerCommands::command_parser(cmd_to_server.cmd);
-                        println!("---------->{:?}", game_server_cmd);
-                        jk += 1;
-                        println!(
-                            "command {:?},args: {:?}",
-                            d.get_operation(),
-                            d.get_args(0).unwrap()
-                        );
+                        let cmd_server_transform: ServerCommand = (*cmd_to_server).clone().into();
+                        println!("--------->{:?}", cmd_server_transform);
+                        //pass to gameserver
                     }
                     Err(e) => {
                         println!("error while deserializing! err: {}", e);

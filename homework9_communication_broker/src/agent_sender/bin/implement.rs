@@ -16,7 +16,7 @@ impl<U: num::Num + serde::Serialize + std::default::Default + Copy> SenderDataIn
     for SenderWrapper<U>
 {
     fn transform_to_send(&self) -> Vec<u8> {
-        serde_json::to_vec(&self.0).unwrap() // echeck error
+        serde_json::to_vec(&self.0).unwrap() // check error!
     }
 
     fn assign_gameid(mut self, id: isize) -> Self {

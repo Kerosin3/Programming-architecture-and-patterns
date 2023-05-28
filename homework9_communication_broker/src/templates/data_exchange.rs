@@ -9,7 +9,9 @@ pub struct DataContainer<X: num::Num + std::default::Default + Copy> {
     pub username: String,
     pub gameid: isize,
     pub objectid: isize,
+    // operation to send to processor
     pub operation: OperationObj,
+    // store args
     pub args: BTreeMap<usize, Argument<X>>,
     pub timestamp: String,
     pub dbg: isize,
@@ -65,6 +67,7 @@ pub mod recv_interface {
         fn get_operation(&self) -> OperationObj;
         fn get_timestamp(&self) -> String;
         fn get_dbg(&self) -> isize;
+        fn get_all_args_pairs(&self) -> Result<Vec<(usize, String)>, ErrorR>;
     }
 
     #[derive(thiserror::Error, Debug, Clone)]
@@ -76,6 +79,8 @@ pub mod recv_interface {
         ErrorArg,
         #[error("Empty variang")]
         EmptyVariant,
+        #[error("No variants")]
+        NoVariants,
     }
 }
 
@@ -85,6 +90,7 @@ pub mod recv_interface {
 #[non_exhaustive]
 pub enum OperationObj {
     //     Auth,
+    InitializeGame,
     Play,
     Test,
     Dgb,
