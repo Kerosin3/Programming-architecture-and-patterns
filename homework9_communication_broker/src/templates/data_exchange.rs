@@ -5,7 +5,7 @@ use std::default::Default;
 //-------SENDER----------------------------
 
 #[derive(Serialize, Deserialize, Debug, Default)]
-pub struct DataContainer<X: num::Num + std::default::Default> {
+pub struct DataContainer<X: num::Num + std::default::Default + Copy> {
     pub username: String,
     pub gameid: isize,
     pub objectid: isize,
@@ -25,7 +25,7 @@ pub mod sender_interface {
 
     pub trait SenderDataInterface<X>: Sized
     where
-        X: Num + Default,
+        X: Num + Default + Copy,
     {
         fn transform_to_send(&self) -> Vec<u8>;
         fn assign_gameid(self, id: isize) -> Self;
@@ -61,7 +61,7 @@ pub mod recv_interface {
         fn get_gameid(&self) -> isize;
         fn get_obj_id(&self) -> isize;
         fn get_name(&self) -> &str;
-        fn get_args(&self, id: usize) -> Result<&Argument<X>, ErrorR>;
+        fn get_args(&self, id: usize) -> Result<(X, String), ErrorR>;
         fn get_operation(&self) -> OperationObj;
         fn get_timestamp(&self) -> String;
         fn get_dbg(&self) -> isize;
@@ -74,17 +74,19 @@ pub mod recv_interface {
         Internal(String),
         #[error("Error getting arg")]
         ErrorArg,
+        #[error("Empty variang")]
+        EmptyVariant,
     }
 }
 
 //------------------------------------------------
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum OperationObj {
-    Auth,
+    //     Auth,
     Play,
-    Test(String),
+    Test,
     Dgb,
 }
 
@@ -96,7 +98,7 @@ impl std::default::Default for OperationObj {
 
 impl OperationObj {
     pub fn create_test(str: String) -> Self {
-        OperationObj::Test(str)
+        OperationObj::Test
     }
     pub fn create_play() -> Self {
         OperationObj::Play

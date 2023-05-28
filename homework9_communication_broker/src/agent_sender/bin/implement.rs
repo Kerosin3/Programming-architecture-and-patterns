@@ -4,15 +4,15 @@ use templates::data_exchange::sender_interface::ErrorS;
 use templates::data_exchange::sender_interface::SenderDataInterface;
 use templates::data_exchange::DataContainer;
 use templates::data_exchange::OperationObj;
-pub struct SenderWrapper<Z: num::Num + std::default::Default>(DataContainer<Z>);
+pub struct SenderWrapper<Z: num::Num + std::default::Default + Copy>(DataContainer<Z>);
 
-impl<T: num::Num + std::default::Default> std::default::Default for SenderWrapper<T> {
+impl<T: num::Num + std::default::Default + Copy> std::default::Default for SenderWrapper<T> {
     fn default() -> Self {
         Self(DataContainer::default())
     }
 }
 
-impl<U: num::Num + serde::Serialize + std::default::Default> SenderDataInterface<U>
+impl<U: num::Num + serde::Serialize + std::default::Default + Copy> SenderDataInterface<U>
     for SenderWrapper<U>
 {
     fn transform_to_send(&self) -> Vec<u8> {

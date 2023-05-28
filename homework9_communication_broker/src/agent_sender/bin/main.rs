@@ -42,7 +42,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     task::spawn(async move {
         for _i in 0..10 {
             let arg0 = Argument::default()
-                .assign_num(_i)
+                .assign_num(_i as usize)
                 .assign_string("some".to_string())
                 .finallize();
             let arg1 = Argument::default()
@@ -50,19 +50,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .assign_string("some1".to_string())
                 .finallize();
 
-            let data_to_send = SenderWrapper::default();
-            let data_to_send = data_to_send
+            let mut data_to_send = SenderWrapper::default();
+            data_to_send = data_to_send
                 .assign_gameid(1)
                 .assign_obj_id(10)
                 .assign_name(&username)
-                .assign_operation(OperationObj::Dgb)
                 .assign_arg(0, arg0)
                 .unwrap()
                 .assign_arg(1, arg1)
                 .unwrap()
                 .assign_timestamp()
                 .assign_dbg(_i as isize)
-                .transform_to_send();
+                .assign_operation(OperationObj::Dgb);
+            if (_i % 2) == 0 {
+                data_to_send = data_to_send.assign_operation(OperationObj::Play);
+            }
+            let data_to_send = data_to_send.transform_to_send();
             client
                 .publish(
                     subscribes.first().unwrap().clone(),

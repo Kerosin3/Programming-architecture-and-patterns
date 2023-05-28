@@ -16,6 +16,8 @@ mod implement;
 use implement::*;
 use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
+mod processor;
+use processor::*;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -39,14 +41,38 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .subscribe(subscribes.first().unwrap().clone(), QoS::AtMostOnce)
         .await
         .unwrap();
-
+    let mut jk = 0_usize;
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(p)) => {
-                let recv_data = RecvWrapper::<i32>::deserialize_data(p);
+                let recv_data = RecvWrapper::<usize>::deserialize_data(p);
                 match recv_data {
                     Ok(d) => {
+                        //black magic
+                        let mut services = ServiceCollection::new();
+                        services.service(d.get_operation()); // get operation type
+                        let Ok(arg_0) = d.get_args(0) else { // take zero arg
+                            println!("error getting arg!");
+                            continue;
+                        };
+                        services.service(arg_0.0); // register number
+                                                   // setup factory Operation and arg (number)
+                        services.service_factory(|cmd: &OperationObj, uval: &usize| {
+                            Ok(ServerCommand {
+                                cmd: *cmd,
+                                arg: *uval,
+                            })
+                        });
+                        let provider = services.provider();
+                        let Ok(cmd_to_server) = provider.get::<ServerCommand>() else {
+                            println!("error while resolvig command!");
+                            continue;
+                        };
+                        //resolve command and inject into server command
+                        let game_server_cmd = GameServerCommands::command_parser(cmd_to_server.cmd);
+                        println!("---------->{:?}", game_server_cmd);
+                        jk += 1;
                         println!(
                             "command {:?},args: {:?}",
                             d.get_operation(),
@@ -58,10 +84,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     }
                 }
             }
-            /*
-            Event::Incoming(Packet::Publish(p)) => {
-                println!("Received: {:?}", p.payload);
-            }*/
             Event::Outgoing(_) => {
                 println!("Outgoing");
             }
