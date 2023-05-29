@@ -59,7 +59,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             let mut data_to_send = SenderWrapper::default();
             data_to_send = data_to_send
                 // setup gameid
-                .assign_gameid(1)
+                .assign_gameid(_i as isize)
                 .assign_obj_id(10)
                 .assign_name(&username)
                 .assign_arg(0, arg0)

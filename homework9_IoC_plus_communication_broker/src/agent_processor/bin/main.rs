@@ -32,11 +32,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
     config.agent_settings.subscribes.reverse();
     let agent_player = config.agent_settings.subscribes.pop().unwrap();
     let game_server = config.agent_settings.subscribes.pop().unwrap();
+    println!("agent {},server {}", agent_player, game_server);
+    //receiver!
     let mut mqttoptions = MqttOptions::new(
-        config.agent_settings.name,
+        config.agent_settings.name.clone(),
+        config.agent_settings.host.clone(),
+        config.agent_settings.port as u16,
+    );
+    //sender!
+    let mut current_agent_sender_name = config.agent_settings.name;
+    current_agent_sender_name.push_str("_sender");
+    let mut mqttoptions_sender = MqttOptions::new(
+        current_agent_sender_name,
         config.agent_settings.host,
         config.agent_settings.port as u16,
     );
+    mqttoptions_sender
+        .set_keep_alive(Duration::from_secs(60))
+        .set_manual_acks(false)
+        .set_clean_session(true);
+
     mqttoptions
         .set_keep_alive(Duration::from_secs(60))
         .set_manual_acks(true)
@@ -48,7 +63,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await
         .unwrap();
     //initialize gameserver
-    let (client_gameserver, mut eventloop_gameserver) = AsyncClient::new(mqttoptions, 10);
+    let (client_gameserver, mut eventloop_gameserver) = AsyncClient::new(mqttoptions_sender, 10);
     client
         .subscribe(game_server, QoS::AtLeastOnce)
         .await
@@ -106,6 +121,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         tokio::spawn(async move {
                             c.ack(&p).await.unwrap();
                         });
+                        client_gameserver
+                            .publish(
+                                "gameserver_processor",
+                                QoS::AtLeastOnce,
+                                false,
+                                "dadsda".to_string().as_bytes(),
+                            )
+                            .await
+                            .unwrap();
+                        time::sleep(Duration::from_millis(100)).await;
+                        eventloop_gameserver.poll().await?;
                     }
                     Err(e) => {
                         println!("error while deserializing! err: {}", e);
@@ -119,6 +145,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 println!("Other");
             }
         }
+        //                         time::sleep(Duration::from_millis(100)).await;
     }
 
     Ok(())
