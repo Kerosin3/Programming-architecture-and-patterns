@@ -1,5 +1,5 @@
 [package]
-name = "mosquito_test"
+name = "ioc_plus_comm_broker_hw"
 version = "0.1.0"
 edition = "2021"
 
