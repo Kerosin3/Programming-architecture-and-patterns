@@ -70,7 +70,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap();
 
     // begin eventloop
-
+    /*
+    task::spawn(async move {
+        eventloop_gameserver.poll().await.unwrap();
+    });*/
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
@@ -121,17 +124,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         tokio::spawn(async move {
                             c.ack(&p).await.unwrap();
                         });
-                        client_gameserver
-                            .publish(
-                                "gameserver_processor",
-                                QoS::AtLeastOnce,
-                                false,
-                                "dadsda".to_string().as_bytes(),
-                            )
-                            .await
-                            .unwrap();
-                        time::sleep(Duration::from_millis(100)).await;
-                        eventloop_gameserver.poll().await?;
                     }
                     Err(e) => {
                         println!("error while deserializing! err: {}", e);
@@ -139,12 +131,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 }
             }
             Event::Outgoing(_) => {
+                client_gameserver
+                    .publish(
+                        "gameserver_processor",
+                        QoS::AtLeastOnce,
+                        false,
+                        "dadsda".to_string().as_bytes(),
+                    )
+                    .await
+                    .unwrap();
+                time::sleep(Duration::from_millis(100)).await;
+
                 println!("Outgoing");
             }
             _ => {
                 println!("Other");
             }
         }
+
         //                         time::sleep(Duration::from_millis(100)).await;
     }
 
