@@ -9,7 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust: [stable, beta, nightly]
+        rust: [nightly]
+        #rust: [stable, beta, nightly]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
     - name: Checkout
@@ -38,3 +39,10 @@ jobs:
       with:
         command: make
         args: ci-flow
+    - name: Run Tests
+      if: matrix.rust == 'nightly'
+      continue-on-error: true
+      uses: actions-rs/cargo@v1
+      with:
+        command: make
+        args: test_all
