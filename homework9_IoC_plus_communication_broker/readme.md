@@ -5,7 +5,7 @@
 * rustup
 * [cargo make]( https://github.com/sagiegurari/cargo-make )
 * [cross-rs]( https://github.com/cross-rs/cross )
-* [rumqtt] ( https://github.com/bytebeamio/rumqtt ) MTQQ Broker
+* [rumqtt]( https://github.com/bytebeamio/rumqtt ) MTQQ Broker
 
 ## Usage
 
