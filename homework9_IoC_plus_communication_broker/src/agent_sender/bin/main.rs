@@ -34,7 +34,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     );
     mqttoptions
         .set_keep_alive(Duration::from_secs(60))
-        .set_manual_acks(true)
+        .set_manual_acks(false)
         .set_clean_session(true);
     // setup eventloop
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
