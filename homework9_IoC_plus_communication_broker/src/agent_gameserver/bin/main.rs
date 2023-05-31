@@ -1,3 +1,4 @@
+#![allow(unreachable_code)]
 use figment::{
     providers::{Env, Format, Toml},
     Figment,
@@ -7,8 +8,7 @@ use serde::Deserialize;
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;
-use templates::data_exchange::recv_interface::RecvDataInterface;
-use templates::data_exchange::OperationObj;
+
 //-------------------------------------------
 
 //-------------------------------------------

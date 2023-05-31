@@ -19,7 +19,7 @@ impl<A: Num + Copy> Argument<A> {
         self
     }
     pub fn try_get_num(&self) -> Option<A> {
-        self.num.clone()
+        self.num
     }
     pub fn try_get_string(&self) -> Option<String> {
         self.string.to_owned()

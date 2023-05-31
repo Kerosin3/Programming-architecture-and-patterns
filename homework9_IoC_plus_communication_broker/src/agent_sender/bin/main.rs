@@ -1,3 +1,4 @@
+#![allow(unreachable_code)]
 use figment::{
     providers::{Env, Format, Toml},
     Figment,
@@ -47,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         for _i in 0..10 {
             // example arg 1
             let arg0 = Argument::default()
-                .assign_num(_i as usize)
+                .assign_num(_i)
                 .assign_string("some".to_string())
                 .finallize();
             // example arg 2

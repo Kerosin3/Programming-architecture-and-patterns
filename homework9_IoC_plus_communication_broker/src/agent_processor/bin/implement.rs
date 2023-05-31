@@ -1,10 +1,10 @@
 use anyhow::Result;
 use num::Num;
 use rumqttc::Publish;
-use std::collections::BTreeMap;
+
 use std::default::Default;
 use std::fmt::Debug;
-use templates::args::Argument;
+
 use templates::data_exchange::recv_interface::ErrorR;
 use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::DataContainer;
@@ -20,7 +20,7 @@ impl<U: Default + Num + Copy> Default for RecvWrapper<U> {
 impl<T: Default + Num + serde::de::DeserializeOwned + Copy> RecvWrapper<T> {
     pub fn deserialize_data(data: &Publish) -> Result<Self, serde_json::Error> {
         let recv_data: Result<DataContainer<T>, serde_json::Error> =
-            serde_json::from_slice(&data.payload.to_vec());
+            serde_json::from_slice(&data.payload);
         match recv_data {
             Ok(d) => Ok(Self(d)),
             Err(e) => Err(e),

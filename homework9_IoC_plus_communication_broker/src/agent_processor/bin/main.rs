@@ -1,3 +1,4 @@
+#![allow(unreachable_code)]
 use ddi::*;
 use figment::{
     providers::{Env, Format, Toml},
@@ -14,7 +15,7 @@ use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
 mod processor;
 use processor::*;
-use tokio::{task, time};
+
 //-------------------------------------------
 
 //-------------------------------------------
@@ -67,26 +68,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await
         .unwrap();
 
-    //initialize gameserver
-
-    /*let (client_gameserver, mut eventloop_gameserver) = AsyncClient::new(mqttoptions_sender, 10);
-        client_gameserver
-            .subscribe(game_server, QoS::AtLeastOnce)
-            .await
-            .unwrap();
-    */
-    // begin eventloop
-    /*
-    task::spawn(async move {
-        eventloop_gameserver.poll().await.unwrap();
-    });*/
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(p)) => {
-                let TOPIC = p.topic.to_owned();
+                let topic_check = p.topic.to_owned();
                 //process gameserver message
-                if TOPIC.eq(&game_server.to_owned()) {
+                if topic_check.eq(&game_server.to_owned()) {
                     println!("SENDING MESSAGE TO GAMESERVER");
                 } else {
                     let recv_data = RecvWrapper::<usize>::deserialize_data(&p);

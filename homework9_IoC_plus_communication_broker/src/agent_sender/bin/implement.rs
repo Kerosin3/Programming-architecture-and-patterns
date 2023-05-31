@@ -30,7 +30,7 @@ impl<U: num::Num + serde::Serialize + std::default::Default + Copy> SenderDataIn
     }
 
     fn assign_name(mut self, name: &str) -> Self {
-        self.0.username = name.to_string().to_owned();
+        self.0.username = name.to_string();
         self
     }
     fn assign_arg(mut self, arg_id: usize, arg: Argument<U>) -> Result<Self, ErrorS> {

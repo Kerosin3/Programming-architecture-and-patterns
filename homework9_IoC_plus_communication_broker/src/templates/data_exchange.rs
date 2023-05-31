@@ -51,7 +51,7 @@ pub mod sender_interface {
 //------------------------------------------------
 //Receiver Interface
 pub mod recv_interface {
-    use super::Argument;
+    
     use super::OperationObj;
     use num::Num;
     use std::default::Default;
@@ -103,7 +103,7 @@ impl std::default::Default for OperationObj {
 }
 
 impl OperationObj {
-    pub fn create_test(str: String) -> Self {
+    pub fn create_test(_str: String) -> Self {
         OperationObj::Test
     }
     pub fn create_play() -> Self {
