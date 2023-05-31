@@ -13,9 +13,9 @@ mod implement;
 use implement::*;
 use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
-mod processor;
-use processor::*;
-
+// mod processor;
+// use processor::*;
+use templates::gameserver::*;
 //-------------------------------------------
 
 //-------------------------------------------

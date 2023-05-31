@@ -8,7 +8,7 @@ use serde::Deserialize;
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;
-
+use templates::gameserver::ServerCommand;
 //-------------------------------------------
 
 //-------------------------------------------
@@ -43,9 +43,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(publisher)) => {
+                let recv_data: Result<ServerCommand, serde_json::Error> =
+                    serde_json::from_slice(&publisher.payload);
                 println!(
-                    "Topic: {}, Payload: {:?}",
-                    publisher.topic, publisher.payload
+                    "Topic: {}, Payload: {}",
+                    publisher.topic,
+                    recv_data.unwrap()
                 );
             }
             Event::Outgoing(_) => {
