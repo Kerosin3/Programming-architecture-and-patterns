@@ -87,6 +87,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             println!("error getting arg!");
                             continue;
                         };
+                            println!(
+                                "GOT VALID MESSAGE FROM A PLAYER {}, gameid [{}]",
+                                d.get_name(),
+                                d.get_gameid()
+                            );
                             //register number
                             services.service(argz);
                             //register agent info
