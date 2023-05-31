@@ -1,0 +1,7 @@
+[agent_settings]
+name = "agent_sender1"
+version = "0.1.0"
+subscribes = ["bridge_processor"]
+host = "localhost"
+port = 1883
+

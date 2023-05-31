@@ -1,0 +1,43 @@
+[package]
+name = "ioc_plus_comm_broker_hw"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "agent_sender"
+path = "src/agent_sender/bin/main.rs"
+
+[[bin]]
+name = "agent_processor"
+path = "src/agent_processor/bin/main.rs"
+
+[[bin]]
+name = "agent_gameserver"
+path = "src/agent_gameserver/bin/main.rs"
+
+[[bin]]
+name = "agent_auth"
+path = "src/agent_auth/bin/main.rs"
+
+
+[lib]
+name = "templates"
+path = "src/templates/lib.rs"
+
+[dependencies]
+chrono = "0.4.24"
+figment = {version = "0.10.8", features = ["toml","env","json"]}
+pretty_env_logger = "0.5.0"
+rumqttc = "0.21.0"
+serde = { version = "1.0.163", features = ["derive"] }
+serde_json = "1.0.96"
+time = "0.3.21"
+tokio = { version = "1.28.1", features = ["rt", "macros", "io-util", "net", "time"] }
+ddi = { git = "https://github.com/EYHN/ddi.git", branch = "main" }
+typetag = "0.2.8"
+num = "0.4.0"
+anyhow = "1.0.71"
+thiserror = "1.0.40"
+jwt-simple = "0.11.5"
