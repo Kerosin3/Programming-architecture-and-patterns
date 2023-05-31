@@ -17,6 +17,11 @@ path = "src/agent_processor/bin/main.rs"
 name = "agent_gameserver"
 path = "src/agent_gameserver/bin/main.rs"
 
+#[[bin]]
+#name = "agent_auth"
+#path = "src/agent_auth/bin/main.rs"
+
+
 [lib]
 name = "templates"
 path = "src/templates/lib.rs"
@@ -35,3 +40,4 @@ typetag = "0.2.8"
 num = "0.4.0"
 anyhow = "1.0.71"
 thiserror = "1.0.40"
+jwt-simple = "0.11.5"
