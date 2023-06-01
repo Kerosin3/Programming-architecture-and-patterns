@@ -1,4 +1,5 @@
 #![allow(unreachable_code)]
+#![allow(unreachable_patterns)]
 use ddi::*;
 use figment::{
     providers::{Env, Format, Toml},
@@ -15,7 +16,6 @@ use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
 // mod processor;
 // use processor::*;
-use std::sync::Arc;
 use templates::gameserver::*;
 //-------------------------------------------
 
@@ -38,6 +38,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let game_server = config.agent_settings.subscribes.pop().unwrap();
     // auth agent
     let auth_server = config.agent_settings.subscribes.pop().unwrap();
+    println!(
+        "agent service: {}, gameserver: {}, auth agent: {}",
+        agent_player, game_server, auth_server
+    );
     //setup mqtt
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.clone(),
@@ -68,83 +72,107 @@ async fn main() -> Result<(), Box<dyn Error>> {
             Event::Incoming(Packet::Publish(p)) => {
                 let topic_check = p.topic.to_owned();
                 //process gameserver message
-                if topic_check.eq(&game_server.to_owned()) {
-                    println!("SENDING MESSAGE TO GAMESERVER");
-                } else if topic_check.eq(&auth_server) {
-                    println!("SENDING MESSAGE TO AUTH SERVER");
-                } else {
-                    let recv_data = RecvWrapper::<usize>::deserialize_data(&p);
-                    match recv_data {
-                        Ok(d) => {
-                            //black magic
-                            let mut services = ServiceCollection::new();
-                            services.service(d.get_operation()); // get operation type
-                            let Ok(argz) = d.get_all_args_pairs() else { // Vector of all args 
-                            println!("error getting arg!");
-                            continue;
-                        };
-                            println!(
-                                "GOT VALID MESSAGE FROM A PLAYER {}, gameid [{}]",
-                                d.get_name(),
-                                d.get_gameid()
-                            );
-                            //register number
-                            services.service(argz);
-                            //register agent info
-                            services.service(AgentInfo {
-                                username: d.get_name().to_owned(),
-                                gameid: d.get_gameid(),
-                                objectid: d.get_obj_id(),
-                            });
-                            /* setup factory */
-                            services.service_factory(
-                                |cmd: &OperationObj,
-                                 arg: &Vec<(usize, String)>,
-                                 info: &AgentInfo| {
-                                    Ok({
-                                        AgentCommand {
-                                            cmd: *cmd,
-                                            arg: arg.clone(),
-                                            info: info.clone(),
-                                        }
-                                    })
-                                },
-                            );
-                            //extract injected structure
-                            let provider = services.provider();
-                            let Ok(cmd_to_server) = provider.get::<AgentCommand>() else {
-                            println!("error while resolvig command!");
-                            continue;
-                        };
-                            //resolve command and inject into server command
-                            let cmd_server_transform: ServerCommand =
-                                (*cmd_to_server).clone().into();
-                            println!("PUBLISHING COMMAND TO GAMESERVER\n");
-                            client
-                                .publish(
-                                    "gameserver_processor",
-                                    QoS::AtLeastOnce,
-                                    false,
-                                    serde_json::to_vec(&cmd_server_transform).unwrap(),
-                                )
-                                .await
-                                .unwrap();
+                // match message topic
+                match topic_check.as_str() {
+                    "auth_processor" => {
+                        println!("SENDING MESSAGE TO AUTH SERVER [{}]", auth_server);
+                    }
+                    "gameserver_processor" => {
+                        println!("SENDING MESSAGE TO GAMESERVER [{}]", game_server);
+                    }
+
+                    "bridge_processor" => {
+                        if let Ok(_rez) = deserialize_player_agent_msg(&p, &client).await {
+                            println!("succesfully published!");
+                        } else {
+                            println!("error while publishing!");
                         }
-                        Err(e) => {
-                            println!("error while deserializing! err: {}", e);
-                        }
+                    }
+                    _ => {
+                        println!("RECEIVER FROM UNREGISTERED IN BRIDGE TOPIC");
                     }
                 }
             }
             Event::Outgoing(_) => {
-                println!("Outgoing");
+                //                 println!("Outgoing");
             }
             _ => {
-                println!("Other");
+                //                 println!("Other");
             }
         }
     }
 
+    Ok(())
+}
+
+pub enum ProcessingErrors {
+    ErrorDeserialization,
+    ErrorResolvingCommand,
+}
+
+async fn deserialize_player_agent_msg(
+    published: &rumqttc::Publish,
+    client: &AsyncClient,
+) -> Result<(), ProcessingErrors> {
+    let recv_data = RecvWrapper::<usize>::deserialize_data(&published);
+    match recv_data {
+        Ok(d) => {
+            //black magic
+            let mut services = ServiceCollection::new();
+            services.service(d.get_operation()); // get operation type
+            let Ok(argz) = d.get_all_args_pairs() else { // Vector of all args
+                                println!("error getting arg!");
+                                return Err(ProcessingErrors::ErrorDeserialization)
+                            };
+            println!(
+                "GOT VALID MESSAGE FROM A PLAYER {}, gameid [{}]",
+                d.get_name(),
+                d.get_gameid()
+            );
+            //register number
+            services.service(argz);
+            //register agent info
+            services.service(AgentInfo {
+                username: d.get_name().to_owned(),
+                gameid: d.get_gameid(),
+                objectid: d.get_obj_id(),
+            });
+            /* setup factory */
+            services.service_factory(
+                |cmd: &OperationObj, arg: &Vec<(usize, String)>, info: &AgentInfo| {
+                    Ok({
+                        AgentCommand {
+                            cmd: *cmd,
+                            arg: arg.clone(),
+                            info: info.clone(),
+                        }
+                    })
+                },
+            );
+            //extract injected structure
+            let provider = services.provider();
+            let Ok(cmd_to_server) = provider.get::<AgentCommand>() else {
+                                println!("error while resolvig command!");
+                                return Err(ProcessingErrors::ErrorDeserialization)
+                            };
+            //resolve command and inject into server command
+            let cmd_server_transform: ServerCommand = (*cmd_to_server).clone().into();
+            println!("PUBLISHING COMMAND TO GAMESERVER PROCESSOR");
+            client
+                .publish(
+                    "gameserver_processor",
+                    QoS::AtLeastOnce,
+                    false,
+                    serde_json::to_vec(&cmd_server_transform).unwrap(),
+                )
+                .await
+                .unwrap();
+        }
+        Err(e) => {
+            println!("error while deserializing! err: {}", e);
+            return Err(ProcessingErrors::ErrorDeserialization);
+        }
+    }
     Ok(())
 }
 
