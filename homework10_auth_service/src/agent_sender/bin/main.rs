@@ -25,9 +25,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .merge(Toml::file(config_path))
         .merge(Env::prefixed("CARGO_"))
         .extract()?;
-    //     dbg!(config);
+    //dbg!(config);
     // setup mtqq broker
-    let subscribes = config.agent_settings.subscribes.to_owned();
+    let mut subscribes = config.agent_settings.subscribes.to_owned();
+    let bridge_processor = subscribes.pop().unwrap(); //get topic
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.to_owned(),
         config.agent_settings.host,
@@ -40,28 +41,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // setup eventloop
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
     client
-        .subscribe(subscribes.first().unwrap().clone(), QoS::AtLeastOnce)
+        .subscribe(bridge_processor.to_owned(), QoS::AtLeastOnce)
         .await
         .unwrap();
     let username = config.agent_settings.name.to_owned();
+    //spawn task
     task::spawn(async move {
-        for _i in 0..10 {
+        for _i in 0..1 {
             // example arg 1
             let arg0 = Argument::default()
                 .assign_num(_i)
-                .assign_string("some".to_string())
+                .assign_string("some_arg1".to_string())
                 .finallize();
             // example arg 2
             let arg1 = Argument::default()
                 .assign_num(_i)
-                .assign_string("some1".to_string())
+                .assign_string("some_arg2".to_string())
                 .finallize();
             // construct message
             let mut data_to_send = SenderWrapper::default();
             data_to_send = data_to_send
                 // setup gameid
-                .assign_gameid(_i as isize)
-                .assign_obj_id(10)
+                .assign_gameid(42 as isize)
+                .assign_obj_id(-1)
                 .assign_name(&username)
                 .assign_arg(0, arg0)
                 .unwrap()
@@ -70,31 +72,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 .assign_timestamp()
                 .assign_dbg(_i as isize)
                 // select operation from Object
-                .assign_operation(OperationObj::Dgb);
-            if (_i % 2) == 0 {
-                // sometimes switch the operation
-                data_to_send = data_to_send.assign_operation(OperationObj::Play);
-            }
-            let data_to_send = data_to_send.transform_to_send();
-            client
-                .publish(
-                    subscribes.first().unwrap().clone(),
-                    QoS::AtLeastOnce,
-                    false,
-                    data_to_send,
-                )
-                .await
-                .unwrap();
+                .assign_operation(OperationObj::InitializeGame);
+            let data_to_send_transformed = data_to_send.transform_to_send();
+            publish(&client, &bridge_processor, &data_to_send_transformed).await;
+
+            println!("Sended message to bridge! [{}]", data_to_send);
             time::sleep(Duration::from_millis(100)).await;
         }
     });
-
-    while let Ok(notification) = eventloop.poll().await {
-        println!("Received = {:?}", notification);
+    //polling eventloop
+    while let Ok(_notification) = eventloop.poll().await {
+        // println!("Received = {:?}", notification);
     }
     println!("finishing");
     Ok(())
 }
+
+async fn publish(client: &AsyncClient, topic: &str, data_to_send: &[u8]) {
+    client
+        .publish(topic, QoS::AtLeastOnce, false, data_to_send)
+        .await
+        .unwrap();
+}
+
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 struct AgentSettings {

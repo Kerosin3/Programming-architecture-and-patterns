@@ -29,33 +29,39 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .merge(Toml::file(config_path))
         .merge(Env::prefixed("CARGO_"))
         .extract()?;
-    //     dbg!(config);
-    // setup mtqq broker
+    //dbg!(config);
+    //setup mtqq broker
     config.agent_settings.subscribes.reverse();
+    //bridge processor
     let agent_player = config.agent_settings.subscribes.pop().unwrap();
+    // game agent
     let game_server = config.agent_settings.subscribes.pop().unwrap();
+    // auth agent
     let auth_server = config.agent_settings.subscribes.pop().unwrap();
-    //receiver!
+    //setup mqtt
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.clone(),
         config.agent_settings.host.clone(),
         config.agent_settings.port as u16,
     );
-
+    //setup mqtt
     mqttoptions
         .set_keep_alive(Duration::from_secs(60))
         .set_manual_acks(false)
         .set_clean_session(true);
     //initialize agent player
     let (client, mut eventloop) = AsyncClient::new(mqttoptions.to_owned(), 10);
+    //subscribe to bridge service (players)
     client
         .subscribe(agent_player, QoS::AtLeastOnce)
         .await
         .unwrap();
+    // subscribe to gameserver
     client
         .subscribe(game_server.to_owned(), QoS::AtLeastOnce)
         .await
         .unwrap();
+    // main loop
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {

@@ -12,6 +12,16 @@ impl<T: num::Num + std::default::Default + Copy> std::default::Default for Sende
     }
 }
 
+impl std::fmt::Display for SenderWrapper<i32> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "username:{}, gameid:{}, operation:{:?}, obj_id:{} timestampl:{}",
+            self.0.username, self.0.gameid, self.0.operation, self.0.objectid, self.0.timestamp
+        )
+    }
+}
+
 impl<U: num::Num + serde::Serialize + std::default::Default + Copy> SenderDataInterface<U>
     for SenderWrapper<U>
 {
