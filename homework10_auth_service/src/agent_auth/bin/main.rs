@@ -1,22 +1,3 @@
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-// ----------UNIMPLEMENTED------------------
-// ----------UNIMPLEMENTED------------------
-// ----------UNIMPLEMENTED------------------
-// ----------UNIMPLEMENTED------------------
-// ----------UNIMPLEMENTED------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-//-------------------------------------------
-
 #![allow(unreachable_code)]
 use figment::{
     providers::{Env, Format, Toml},
@@ -42,7 +23,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .merge(Env::prefixed("CARGO_"))
         .extract()?;
     // setup mtqq broker
-    let subscribes = config.agent_settings.subscribes.to_owned();
+    let mut subscribes = config.agent_settings.subscribes.to_owned();
+    subscribes.reverse();
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name,
         config.agent_settings.host,
@@ -54,10 +36,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .set_clean_session(true);
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-    client
-        .subscribe(subscribes.first().unwrap().clone(), QoS::AtLeastOnce)
-        .await
-        .unwrap();
+    let gameserver_agent = subscribes.pop().unwrap();
+    subscribe_to(&client, &gameserver_agent).await;
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
@@ -66,6 +46,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     "Topic: {}, Payload: {:?}",
                     publisher.topic, publisher.payload
                 );
+
+                let Ok(recv_data) = serde_json::from_slice::<ServerCommand>(&publisher.payload) else {
+                    println!("error while deserializing data!");
+                    continue;
+                };
+                println!("got data: {}", recv_data);
             }
             Event::Outgoing(_) => {
                 println!("Outgoing");
@@ -76,6 +62,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     Ok(())
+}
+
+async fn subscribe_to(client: &AsyncClient, topic: &str) {
+    client
+        .subscribe(topic.to_owned(), QoS::AtLeastOnce)
+        .await
+        .unwrap();
 }
 
 #[allow(dead_code)]

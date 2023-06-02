@@ -17,12 +17,11 @@ impl std::fmt::Display for ServerCommand {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "Command:[{:?}], from user [{}], gameid: [{}])",
-            self.cmd, self.info.username, self.info.gameid
+            "agentname: {}, command :{:?}, args: {:?}",
+            self.info.username, self.cmd, self.args
         )
     }
 }
-
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum GameServerCommands {

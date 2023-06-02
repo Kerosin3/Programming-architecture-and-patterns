@@ -51,7 +51,7 @@ pub mod sender_interface {
 //------------------------------------------------
 //Receiver Interface
 pub mod recv_interface {
-    
+
     use super::OperationObj;
     use num::Num;
     use std::default::Default;
@@ -86,7 +86,7 @@ pub mod recv_interface {
 
 //------------------------------------------------
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Copy)]
 #[non_exhaustive]
 pub enum OperationObj {
     //     Auth,

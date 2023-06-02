@@ -51,12 +51,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
             // example arg 1
             let arg0 = Argument::default()
                 .assign_num(_i)
-                .assign_string("some_arg1".to_string())
+                .assign_string(config.agent_settings.name.to_owned())
                 .finallize();
             // example arg 2
             let arg1 = Argument::default()
                 .assign_num(_i)
-                .assign_string("some_arg2".to_string())
+                .assign_string("another_player".to_string())
                 .finallize();
             // construct message
             let mut data_to_send = SenderWrapper::default();

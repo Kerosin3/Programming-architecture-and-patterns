@@ -125,9 +125,10 @@ async fn deserialize_player_agent_msg(
                                 return Err(ProcessingErrors::ErrorDeserialization)
                             };
             println!(
-                "GOT VALID MESSAGE FROM A PLAYER {}, gameid [{}]",
+                "GOT VALID MESSAGE FROM A PLAYER {}, gameid [{}], args: {:?}",
                 d.get_name(),
-                d.get_gameid()
+                d.get_gameid(),
+                d.get_all_args_pairs()
             );
             //register number
             services.service(argz);
@@ -160,7 +161,7 @@ async fn deserialize_player_agent_msg(
             println!("PUBLISHING COMMAND TO GAMESERVER PROCESSOR");
             client
                 .publish(
-                    "gameserver_processor",
+                    "auth_processor",
                     QoS::AtLeastOnce,
                     false,
                     serde_json::to_vec(&cmd_server_transform).unwrap(),
