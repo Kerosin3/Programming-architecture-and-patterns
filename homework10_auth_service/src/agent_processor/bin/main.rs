@@ -16,6 +16,7 @@ use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
 // mod processor;
 // use processor::*;
+use templates::auth::*;
 use templates::gameserver::*;
 //-------------------------------------------
 
@@ -38,10 +39,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let game_server = config.agent_settings.subscribes.pop().unwrap();
     // auth agent
     let auth_server = config.agent_settings.subscribes.pop().unwrap();
-    println!(
-        "agent service: {}, gameserver: {}, auth agent: {}",
-        agent_player, game_server, auth_server
-    );
+    // auth response
+    let auth_response = config.agent_settings.subscribes.pop().unwrap();
     //setup mqtt
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.clone(),
@@ -65,6 +64,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .subscribe(game_server.to_owned(), QoS::AtLeastOnce)
         .await
         .unwrap();
+    client
+        .subscribe(auth_server.to_owned(), QoS::AtLeastOnce)
+        .await
+        .unwrap();
+    client
+        .subscribe(auth_response.to_owned(), QoS::AtLeastOnce)
+        .await
+        .unwrap();
+
     // main loop
     loop {
         let notification = eventloop.poll().await.unwrap();
@@ -79,6 +87,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     }
                     "gameserver_processor" => {
                         println!("SENDING MESSAGE TO GAMESERVER [{}]", game_server);
+                    }
+                    "auth_response" => {
+                        // here we should register known users
+                        println!("GOT REGISTERED USER");
                     }
 
                     "bridge_processor" => {
@@ -157,17 +169,28 @@ async fn deserialize_player_agent_msg(
                                 return Err(ProcessingErrors::ErrorDeserialization)
                             };
             //resolve command and inject into server command
+            println!("command is [{:?}]", cmd_to_server.cmd);
+            // provide behaviour
+
             let cmd_server_transform: ServerCommand = (*cmd_to_server).clone().into();
-            println!("PUBLISHING COMMAND TO GAMESERVER PROCESSOR");
-            client
-                .publish(
-                    "auth_processor",
-                    QoS::AtLeastOnce,
-                    false,
-                    serde_json::to_vec(&cmd_server_transform).unwrap(),
-                )
-                .await
-                .unwrap();
+            match cmd_to_server.cmd {
+                OperationObj::InitializeGame => {
+                    println!("PUBLISHING COMMAND TO AUTH SERVER");
+                    client
+                        .publish(
+                            "auth_processor",
+                            QoS::AtLeastOnce,
+                            false,
+                            serde_json::to_vec(&cmd_server_transform).unwrap(),
+                        )
+                        .await
+                        .unwrap();
+                }
+                OperationObj::Play => todo!(),
+                OperationObj::Test => todo!(),
+                OperationObj::Dgb => todo!(),
+                _ => todo!(),
+            }
         }
         Err(e) => {
             println!("error while deserializing! err: {}", e);

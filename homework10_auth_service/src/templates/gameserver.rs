@@ -12,7 +12,18 @@ pub struct ServerCommand {
     pub info: AgentInfo,
     pub args: Vec<(usize, String)>,
 }
-
+impl ServerCommand {
+    pub fn get_username(&self) -> String {
+        self.info.username.to_owned()
+    }
+    pub fn get_args(&self) -> Vec<String> {
+        let mut out = vec![];
+        for s in self.args.iter() {
+            out.push(s.1.to_owned())
+        }
+        out
+    }
+}
 impl std::fmt::Display for ServerCommand {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

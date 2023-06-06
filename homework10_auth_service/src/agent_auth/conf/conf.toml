@@ -1,7 +1,7 @@
 [agent_settings]
 name = "agent_auth"
 version = "0.1.0"
-subscribes = ["auth_processor"]
+subscribes = ["auth_processor","auth_response"]
 host = "localhost"
 port = 1883
 

@@ -9,7 +9,8 @@ use serde::Deserialize;
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;
-use templates::gameserver::ServerCommand;
+use templates::auth::*;
+use templates::gameserver::{GameServerCommands, ServerCommand};
 //-------------------------------------------
 
 //-------------------------------------------
@@ -36,8 +37,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .set_clean_session(true);
 
     let (client, mut eventloop) = AsyncClient::new(mqttoptions, 10);
-    let gameserver_agent = subscribes.pop().unwrap();
-    subscribe_to(&client, &gameserver_agent).await;
+    let auth_transport = subscribes.pop().unwrap();
+    subscribe_to(&client, &auth_transport).await;
+    let auth_response = subscribes.pop().unwrap();
+    subscribe_to(&client, &auth_response).await;
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
@@ -46,12 +49,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     "Topic: {}, Payload: {:?}",
                     publisher.topic, publisher.payload
                 );
-
+                if publisher.topic != auth_transport {
+                    continue;
+                }
                 let Ok(recv_data) = serde_json::from_slice::<ServerCommand>(&publisher.payload) else {
                     println!("error while deserializing data!");
                     continue;
                 };
+                let cmd_from_bridge = recv_data.cmd;
                 println!("got data: {}", recv_data);
+                match cmd_from_bridge {
+                    GameServerCommands::SrvDbg => {}
+                    GameServerCommands::SrvRotateObject => {}
+                    GameServerCommands::SrvGameInit => {
+                        println!("publishing to auth response");
+                        //register users
+                        let mut answ = AuthMessage::default();
+                        answ.username = recv_data.info.username.to_owned();
+                        answ.generate_key();
+                        answ.generate_token();
+                        client
+                            .publish(
+                                "auth_response",
+                                QoS::AtLeastOnce,
+                                false,
+                                serde_json::to_vec(&answ).unwrap(),
+                            )
+                            .await
+                            .unwrap();
+                    }
+                    _ => todo!(),
+                }
             }
             Event::Outgoing(_) => {
                 println!("Outgoing");
@@ -61,6 +89,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     }
+
     Ok(())
 }
 
