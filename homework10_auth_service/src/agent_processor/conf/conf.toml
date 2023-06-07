@@ -1,7 +1,7 @@
 [agent_settings]
 name = "agent_bridge_processor"
 version = "0.1.0"
-subscribes = ["bridge_processor","gameserver_processor","auth_processor","auth_response"]
+subscribes = ["bridge_processor","gameserver_processor","auth_processor","auth_response","processor_auth"]
 #subscribes = ["bridge_processor","agent_gameserver"]
 host = "localhost"
 port = 1883

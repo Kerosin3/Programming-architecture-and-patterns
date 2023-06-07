@@ -6,7 +6,7 @@ use figment::{
     Figment,
 };
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -14,6 +14,8 @@ mod implement;
 use implement::*;
 use templates::data_exchange::recv_interface::RecvDataInterface;
 use templates::data_exchange::OperationObj;
+mod auth_processor;
+use auth_processor::*;
 // mod processor;
 // use processor::*;
 use templates::auth::*;
@@ -41,6 +43,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let auth_server = config.agent_settings.subscribes.pop().unwrap();
     // auth response
     let auth_response = config.agent_settings.subscribes.pop().unwrap();
+    // processor auth
+    let processor_auth = config.agent_settings.subscribes.pop().unwrap();
     //setup mqtt
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.clone(),
@@ -72,7 +76,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .subscribe(auth_response.to_owned(), QoS::AtLeastOnce)
         .await
         .unwrap();
+    client
+        .subscribe(processor_auth.to_owned(), QoS::AtLeastOnce)
+        .await
+        .unwrap();
 
+    let mut registered_users = AuthUsersDB::default();
     // main loop
     loop {
         let notification = eventloop.poll().await.unwrap();
@@ -100,6 +109,42 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             "message: {} {}",
                             auth_message_back.username, auth_message_back.token
                         );
+                        // match msg status
+                        /*
+                        if std::mem::discriminant(&auth_message_back.status)
+                            != std::mem::discriminant(&AuthError::Okey(0))
+                        //ignore 0..its ok
+                        {
+                            println!("NOT OK ANSWER FROM AUTH, IGNORING");
+                            continue;
+                        }*/
+                        let gameid = match auth_message_back.status {
+                            AuthError::Okey(id) => id,
+                            _ => {
+                                println!("NOT OK ANSWER FROM AUTH, IGNORING");
+                                continue;
+                            }
+                        };
+                        //register user in processor
+                        registered_users
+                            .insert_user(auth_message_back.username.to_owned(), &auth_message_back);
+                        let mut back_to_agent = AuthToAgent::default();
+                        // create auth message back to agent
+                        back_to_agent.assign(
+                            auth_message_back.username.to_owned(),
+                            gameid,
+                            auth_message_back.token.to_owned(),
+                        );
+                        //publish message
+                        client
+                            .publish(
+                                "processor_auth",
+                                QoS::AtLeastOnce,
+                                false,
+                                serde_json::to_vec(&back_to_agent).unwrap(),
+                            )
+                            .await
+                            .unwrap();
                     }
                     "bridge_processor" => {
                         if let Ok(_rez) = deserialize_player_agent_msg(&p, &client).await {
@@ -124,6 +169,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+//---------------------------------------------------------
+//---------------------------------------------------------
+#[derive(Serialize, Deserialize, Debug, Default)]
+struct AuthToAgent {
+    username: String,
+    gameid: isize,
+    token: String,
+}
+impl AuthToAgent {
+    fn assign(&mut self, username: String, gameid: isize, token: String) {
+        self.username = username;
+        self.gameid = gameid;
+        self.token = token;
+    }
+}
+//---------------------------------------------------------
+//---------------------------------------------------------
 
 pub enum ProcessingErrors {
     ErrorDeserialization,

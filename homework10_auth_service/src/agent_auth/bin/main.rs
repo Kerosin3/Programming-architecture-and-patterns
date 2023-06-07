@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let auth_response = subscribes.pop().unwrap();
     subscribe_to(&client, &auth_response).await;
     let mut auth_users = Database::default();
-    let mut games_initialized = Arc::new(Vec::<isize>::new());
+    let mut games_initialized = InitializedGames::default();
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
@@ -76,7 +76,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             users.push(user.1.to_owned());
                         }
                         users.push(creator_username);
-                        // preparing answer
+                        // initialize game (fix it with user already registered!)
+                        games_initialized.initialize_game(users.to_owned());
+                        let gameid = games_initialized.get_last_init_game();
+
                         for user in users.iter() {
                             if auth_users.test_whether_user_already_registered(user) {
                                 println!("User is already registered!");
@@ -84,22 +87,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             }
                             //generate default answer and generate tokens
                             let mut answ = AuthMessageWrapper::default();
-                            let gameid = 4242_isize;
                             answ.gen_key();
                             answ.gen_token();
                             answ.set_username(user.to_owned());
                             answ.assign_gameid(gameid); //sets status OK
                                                         //register in BD
-                            let auth_data = answ.get_auth_data_copy();
-                            // verify
-                            /*
-                                                        let claims_t = answ
-                                                            .0
-                                                            .get_restored_key()
-                                                            .verify_token::<NoCustomClaims>(&answ.0.token, None)
-                                                            .unwrap();
-                            */
-                            //insert to table
+                                                        // verify
+                                                        /*
+                                                                                    let claims_t = answ
+                                                                                        .0
+                                                                                        .get_restored_key()
+                                                                                        .verify_token::<NoCustomClaims>(&answ.0.token, None)
+                                                                                        .unwrap();
+                                                        */
+                            //insert to table auth data
                             if let Err(e) =
                                 auth_users.insert_to_db(&answ.0.username, answ.get_auth_data_copy())
                             {
@@ -114,17 +115,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 )
                                 .await
                                 .unwrap();
-                        }
-                        let gameid = 4242_isize;
-                        {
-                            let vt = Arc::get_mut(&mut games_initialized).unwrap();
-                            if vt.contains(&gameid) {
-                                println!("game already initialized!");
-                                // return error
-                                continue;
-                            } else {
-                                vt.push(gameid);
-                            }
                         }
                     }
                     _ => todo!(),

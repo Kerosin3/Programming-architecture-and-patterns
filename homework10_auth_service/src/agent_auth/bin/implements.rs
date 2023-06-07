@@ -50,3 +50,26 @@ pub enum AuthProcessignError {
     #[error("record not exists")]
     ErrUpdating,
 }
+
+#[derive(Debug)]
+pub(crate) struct InitializedGames(BTreeMap<isize, Vec<String>>, isize);
+impl InitializedGames {
+    pub fn initialize_game(&mut self, usernames: Vec<String>) -> Option<()> {
+        println!(
+            "registering game id = [{}] with users {:?}",
+            self.1, usernames
+        );
+        self.0.insert(self.1, usernames);
+        self.1 += 1;
+        Some(())
+    }
+    pub fn get_last_init_game(&self) -> isize {
+        self.1 - 1
+    }
+}
+
+impl Default for InitializedGames {
+    fn default() -> Self {
+        Self(Default::default(), 1)
+    }
+}

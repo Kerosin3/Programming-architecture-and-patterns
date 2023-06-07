@@ -2,7 +2,7 @@ use jwt_simple::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::default::Default;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AuthMessage {
     pub username: String,
     pub key: Vec<u8>,
@@ -65,7 +65,7 @@ impl Default for AuthMessage {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd, Eq)]
 pub enum AuthError {
     NotAllowed,
     NotImplemented,
