@@ -12,6 +12,9 @@ use std::path::PathBuf;
 use std::time::Duration;
 use templates::auth::*;
 use templates::gameserver::{GameServerCommands, ServerCommand};
+mod implements;
+use implements::*;
+use std::sync::Arc;
 //-------------------------------------------
 //-------------------------------------------
 #[tokio::main(flavor = "current_thread")]
@@ -41,13 +44,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     subscribe_to(&client, &auth_transport).await;
     let auth_response = subscribes.pop().unwrap();
     subscribe_to(&client, &auth_response).await;
-    let mut auth_users: BTreeMap<String, AuthData> = BTreeMap::new();
+    let mut auth_users = Database::default();
+    let mut games_initialized = Arc::new(Vec::<isize>::new());
     loop {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(publisher)) => {
                 println!(
-                    "Topic: {}, Payload: {:?}",
+                    " RECEIVED MESSAGE: Topic: {}, Payload: {:?}",
                     publisher.topic, publisher.payload
                 );
                 if publisher.topic != auth_transport {
@@ -58,37 +62,61 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     continue;
                 };
                 let cmd_from_bridge = recv_data.cmd;
-                println!("got data: {}", recv_data);
                 match cmd_from_bridge {
                     GameServerCommands::SrvDbg => {}
                     GameServerCommands::SrvRotateObject => {}
                     GameServerCommands::SrvGameInit => {
-                        println!("publishing to auth response");
                         //register users
-                        let mut answ = AuthMessageWrapper::default();
-                        answ.gen_key();
-                        answ.gen_token();
-                        answ.set_username(recv_data.info.username.to_owned());
-                        answ.assign_gameid(4242); //sets status OK
-                        let auth_data = answ.get_auth_data_copy();
-                        //insert to table
-                        if auth_users
-                            .insert(recv_data.get_username(), auth_data)
-                            .is_some()
-                        {
-                            println!("updating auth tokens for user {}", &recv_data.info.username);
-                        } else {
-                            println!("generated tocket for user: {}", &recv_data.info.username);
+                        //creator
+                        let creator_username = recv_data.info.username.to_owned();
+                        //other users
+                        let mut users = Vec::<String>::new();
+                        for user in recv_data.args.iter() {
+                            users.push(user.1.to_owned());
                         }
-                        client
-                            .publish(
-                                "auth_response",
-                                QoS::AtLeastOnce,
-                                false,
-                                answ.get_serialized(),
-                            )
-                            .await
-                            .unwrap();
+                        users.push(creator_username);
+                        // preparing answer
+                        for user in users.iter() {
+                            if auth_users.test_whether_user_already_registered(user) {
+                                println!("User is already registered!");
+                                continue;
+                            }
+                            //answer default struct
+                            let mut answ = AuthMessageWrapper::default();
+                            let gameid = 4242_isize;
+                            answ.gen_key();
+                            answ.gen_token();
+                            answ.set_username(user.to_owned());
+                            answ.assign_gameid(gameid); //sets status OK
+                                                        //register in BD
+                            let auth_data = answ.get_auth_data_copy();
+                            //insert to table
+                            if let Err(e) =
+                                auth_users.insert_to_db(&answ.0.username, answ.get_auth_data_copy())
+                            {
+                                println!("error during db insertion: {}", e);
+                            }
+                            client
+                                .publish(
+                                    "auth_response",
+                                    QoS::AtLeastOnce,
+                                    false,
+                                    answ.get_serialized(),
+                                )
+                                .await
+                                .unwrap();
+                        }
+                        let gameid = 4242_isize;
+                        {
+                            let vt = Arc::get_mut(&mut games_initialized).unwrap();
+                            if vt.contains(&gameid) {
+                                println!("game already initialized!");
+                                // return error
+                                continue;
+                            } else {
+                                vt.push(gameid);
+                            }
+                        }
                     }
                     _ => todo!(),
                 }

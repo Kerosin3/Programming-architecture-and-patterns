@@ -89,7 +89,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         println!("SENDING MESSAGE TO GAMESERVER [{}]", game_server);
                     }
                     "auth_response" => {
-                        // here we should register known users
+                        // auth server registered users
                         println!("GOT REGISTERED USER");
                     }
 
