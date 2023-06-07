@@ -91,8 +91,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     "auth_response" => {
                         // auth server registered users
                         println!("GOT REGISTERED USER");
+                        let Ok(auth_message_back) = serde_json::from_slice::<AuthMessage>(&p.payload) else {
+                            println!("error while deserializing message from auth agent");
+                            continue;
+                        };
+                        // register user in processor here
+                        println!(
+                            "message: {} {}",
+                            auth_message_back.username, auth_message_back.token
+                        );
                     }
-
                     "bridge_processor" => {
                         if let Ok(_rez) = deserialize_player_agent_msg(&p, &client).await {
                             println!("succesfully published!");

@@ -14,6 +14,7 @@ use templates::auth::*;
 use templates::gameserver::{GameServerCommands, ServerCommand};
 mod implements;
 use implements::*;
+use jwt_simple::prelude::*;
 use std::sync::Arc;
 //-------------------------------------------
 //-------------------------------------------
@@ -81,7 +82,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                                 println!("User is already registered!");
                                 continue;
                             }
-                            //answer default struct
+                            //generate default answer and generate tokens
                             let mut answ = AuthMessageWrapper::default();
                             let gameid = 4242_isize;
                             answ.gen_key();
@@ -90,6 +91,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             answ.assign_gameid(gameid); //sets status OK
                                                         //register in BD
                             let auth_data = answ.get_auth_data_copy();
+                            // verify
+                            /*
+                                                        let claims_t = answ
+                                                            .0
+                                                            .get_restored_key()
+                                                            .verify_token::<NoCustomClaims>(&answ.0.token, None)
+                                                            .unwrap();
+                            */
                             //insert to table
                             if let Err(e) =
                                 auth_users.insert_to_db(&answ.0.username, answ.get_auth_data_copy())
