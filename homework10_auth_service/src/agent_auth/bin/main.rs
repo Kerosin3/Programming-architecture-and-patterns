@@ -51,10 +51,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let notification = eventloop.poll().await.unwrap();
         match notification {
             Event::Incoming(Packet::Publish(publisher)) => {
-                println!(
-                    " RECEIVED MESSAGE: Topic: {}, Payload: {:?}",
-                    publisher.topic, publisher.payload
-                );
+                // accept only agme init packages
                 if publisher.topic != auth_transport {
                     continue;
                 }
@@ -91,16 +88,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             answ.gen_token();
                             answ.set_username(user.to_owned());
                             answ.assign_gameid(gameid); //sets status OK
-                                                        //register in BD
-                                                        // verify
-                                                        /*
-                                                                                    let claims_t = answ
-                                                                                        .0
-                                                                                        .get_restored_key()
-                                                                                        .verify_token::<NoCustomClaims>(&answ.0.token, None)
-                                                                                        .unwrap();
-                                                        */
-                            //insert to table auth data
+                                                        //insert to table auth data
                             if let Err(e) =
                                 auth_users.insert_to_db(&answ.0.username, answ.get_auth_data_copy())
                             {

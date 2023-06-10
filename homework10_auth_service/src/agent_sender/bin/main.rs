@@ -4,7 +4,7 @@ use figment::{
     Figment,
 };
 use rumqttc::{AsyncClient, Event, Incoming, MqttOptions, Packet, QoS};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -27,9 +27,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //dbg!(config);
     // setup mtqq broker
     let mut subscribes = config.agent_settings.subscribes.to_owned();
+    let agent_name = config.agent_settings.name.to_owned();
     subscribes.reverse();
     let bridge_processor = subscribes.pop().unwrap(); //get topic
-    let processor_auth = subscribes.pop().unwrap();
+    let auth_service_processor = subscribes.pop().unwrap();
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.to_owned(),
         config.agent_settings.host,
@@ -46,21 +47,44 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await
         .unwrap();
     client
-        .subscribe(processor_auth.to_owned(), QoS::AtLeastOnce)
+        .subscribe(auth_service_processor.to_owned(), QoS::AtLeastOnce)
         .await
         .unwrap();
-    let username = config.agent_settings.name.to_owned();
+    let username = config.agent_settings.name.clone();
+    //--------------------------
     //spawn task initialize game
+    //--------------------------
+    let client2 = client.to_owned();
+    let bridge2 = bridge_processor.to_owned();
     task::spawn(async move {
-        let data_to_send_transformed = initialize_game(username);
-        publish(&client, &bridge_processor, &data_to_send_transformed).await;
+        let data_to_send_transformed = initialize_game(config.agent_settings.name);
+        publish(&client2, &bridge2, &data_to_send_transformed).await;
         time::sleep(Duration::from_millis(100)).await;
     });
 
+    //--------------------------
+    // wait till game initializes
+    //--------------------------
     loop {
         match eventloop.poll().await {
             Ok(Event::Incoming(Incoming::Publish(p))) => {
-                println!("1 Topic: {}, Payload: {:?}", p.topic, p.payload);
+                let Ok(recv_auth_data) = serde_json::from_slice::<AuthToAgent>(&p.payload) else{
+                    //skip all message that are not from auth processor service
+                    continue;
+                };
+                // skip not ours tokens. ohh.....
+                if &recv_auth_data.username != &username {
+                    continue;
+                }
+                let token = recv_auth_data.token;
+                let gameid = recv_auth_data.gameid;
+                println!(
+                    "Accepted token for user {}, our name is {}, assigned gameid: {}\ntoken: [{}]",
+                    recv_auth_data.username, &username, gameid, token
+                );
+                // now publish!
+                let data_to_send_transformed = send_game_command(&username, token, gameid);
+                publish(&client, &bridge_processor, &data_to_send_transformed).await;
             }
             Ok(Event::Incoming(i)) => {
                 println!("Incoming = {i:?}");
@@ -95,7 +119,7 @@ pub fn initialize_game(agent_username: String) -> Vec<u8> {
     let mut data_to_send = SenderWrapper::default();
     data_to_send = data_to_send
         // setup gameid
-        .assign_gameid(42 as isize)
+        .assign_gameid(-1 as isize)
         .assign_obj_id(-1)
         .assign_name(&agent_username)
         .assign_arg(0, arg0)
@@ -107,6 +131,32 @@ pub fn initialize_game(agent_username: String) -> Vec<u8> {
         // select operation from Object
         .assign_operation(OperationObj::InitializeGame);
     data_to_send.transform_to_send()
+}
+
+pub fn send_game_command(username: &str, token: String, gameid: isize) -> Vec<u8> {
+    let mut data_to_send: SenderWrapper<i32> = SenderWrapper::default();
+    data_to_send = data_to_send
+        // setup gameid
+        .assign_gameid(gameid)
+        .assign_obj_id(1)
+        .assign_name(username)
+        //.assign_arg(0, arg0)
+        //.unwrap()
+        //.assign_arg(1, arg1)
+        //.unwrap()
+        .assign_timestamp()
+        .assign_dbg(1 as isize)
+        // select operation from Object
+        .assign_operation(OperationObj::send_play_command(token));
+    data_to_send.transform_to_send()
+}
+
+// put to library!
+#[derive(Serialize, Deserialize, Debug, Default)]
+struct AuthToAgent {
+    username: String,
+    gameid: isize,
+    token: String,
 }
 
 async fn publish(client: &AsyncClient, topic: &str, data_to_send: &[u8]) {

@@ -18,6 +18,7 @@ mod auth_processor;
 use auth_processor::*;
 // mod processor;
 // use processor::*;
+use jwt_simple::prelude::*;
 use templates::auth::*;
 use templates::gameserver::*;
 //-------------------------------------------
@@ -44,7 +45,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // auth response
     let auth_response = config.agent_settings.subscribes.pop().unwrap();
     // processor auth
-    let processor_auth = config.agent_settings.subscribes.pop().unwrap();
+    let auth_service_processor = config.agent_settings.subscribes.pop().unwrap();
     //setup mqtt
     let mut mqttoptions = MqttOptions::new(
         config.agent_settings.name.clone(),
@@ -77,7 +78,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await
         .unwrap();
     client
-        .subscribe(processor_auth.to_owned(), QoS::AtLeastOnce)
+        .subscribe(auth_service_processor.to_owned(), QoS::AtLeastOnce)
         .await
         .unwrap();
 
@@ -90,13 +91,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 let topic_check = p.topic.to_owned();
                 //process gameserver message
                 // match message topic
+                //println!("topic is {}", topic_check);
                 match topic_check.as_str() {
+                    // sending auth request to auth service
                     "auth_processor" => {
                         println!("SENDING MESSAGE TO AUTH SERVER [{}]", auth_server);
                     }
+                    // sending command to gameserver service
                     "gameserver_processor" => {
                         println!("SENDING MESSAGE TO GAMESERVER [{}]", game_server);
                     }
+                    // process auth response from auth service
                     "auth_response" => {
                         // auth server registered users
                         println!("GOT REGISTERED USER");
@@ -109,15 +114,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             "message: {} {}",
                             auth_message_back.username, auth_message_back.token
                         );
-                        // match msg status
-                        /*
-                        if std::mem::discriminant(&auth_message_back.status)
-                            != std::mem::discriminant(&AuthError::Okey(0))
-                        //ignore 0..its ok
-                        {
-                            println!("NOT OK ANSWER FROM AUTH, IGNORING");
-                            continue;
-                        }*/
                         let gameid = match auth_message_back.status {
                             AuthError::Okey(id) => id,
                             _ => {
@@ -135,10 +131,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             gameid,
                             auth_message_back.token.to_owned(),
                         );
-                        //publish message
+                        //publish auth token to agent
                         client
                             .publish(
-                                "processor_auth",
+                                "auth_service_processor", // back to agent!
                                 QoS::AtLeastOnce,
                                 false,
                                 serde_json::to_vec(&back_to_agent).unwrap(),
@@ -147,22 +143,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
                             .unwrap();
                     }
                     "bridge_processor" => {
-                        if let Ok(_rez) = deserialize_player_agent_msg(&p, &client).await {
-                            println!("succesfully published!");
+                        if let Ok(_rez) =
+                            // deserialize and match agent message, send response
+                            deserialize_player_agent_msg(&p, &client, &registered_users)
+                                    .await
+                        {
+                            println!("succesfully published message to gameserver!");
                         } else {
-                            println!("error while publishing!");
+                            println!("error while publishing message to gameserver!");
                         }
                     }
                     _ => {
-                        println!("RECEIVER FROM UNREGISTERED IN BRIDGE TOPIC");
+                        println!("RECEIVED A MESSAGE FROM UNREGISTERED IN BRIDGE TOPIC, SKIPPING");
                     }
                 }
             }
             Event::Outgoing(_) => {
-                //                 println!("Outgoing");
+                //println!("Outgoing");
             }
             _ => {
-                //                 println!("Other");
+                //println!("Other");
             }
         }
     }
@@ -191,73 +191,109 @@ impl AuthToAgent {
 pub enum ProcessingErrors {
     ErrorDeserialization,
     ErrorResolvingCommand,
+    ErrorNoSuchUserRegistered,
 }
 
 async fn deserialize_player_agent_msg(
     published: &rumqttc::Publish,
     client: &AsyncClient,
+    db: &AuthUsersDB,
 ) -> Result<(), ProcessingErrors> {
     let recv_data = RecvWrapper::<usize>::deserialize_data(&published);
     match recv_data {
         Ok(d) => {
             //black magic
-            let mut services = ServiceCollection::new();
-            services.service(d.get_operation()); // get operation type
-            let Ok(argz) = d.get_all_args_pairs() else { // Vector of all args
-                                println!("error getting arg!");
+            match d.get_operation() {
+                // GAME INIT
+                OperationObj::InitializeGame => {
+                    let mut services = ServiceCollection::new();
+                    services.service(d.get_operation()); // get operation type
+
+                    let Ok(argz) = d.get_all_args_pairs() else { // Vector of all args
+                                println!("error getting args!");
                                 return Err(ProcessingErrors::ErrorDeserialization)
                             };
-            println!(
-                "GOT VALID MESSAGE FROM A PLAYER {}, gameid [{}], args: {:?}",
-                d.get_name(),
-                d.get_gameid(),
-                d.get_all_args_pairs()
-            );
-            //register number
-            services.service(argz);
-            //register agent info
-            services.service(AgentInfo {
-                username: d.get_name().to_owned(),
-                gameid: d.get_gameid(),
-                objectid: d.get_obj_id(),
-            });
-            /* setup factory */
-            services.service_factory(
-                |cmd: &OperationObj, arg: &Vec<(usize, String)>, info: &AgentInfo| {
-                    Ok({
-                        AgentCommand {
-                            cmd: *cmd,
-                            arg: arg.clone(),
-                            info: info.clone(),
-                        }
-                    })
-                },
-            );
-            //extract injected structure
-            let provider = services.provider();
-            let Ok(cmd_to_server) = provider.get::<AgentCommand>() else {
+                    println!(
+                        "GOT VALID MESSAGE FROM A PLAYER {}, gameid [{}], args: {:?}",
+                        d.get_name(),
+                        d.get_gameid(),
+                        d.get_all_args_pairs()
+                    );
+                    //register number
+                    services.service(argz);
+                    //register agent info
+                    services.service(AgentInfo {
+                        username: d.get_name().to_owned(),
+                        gameid: d.get_gameid(),
+                        objectid: d.get_obj_id(),
+                    });
+                    /* setup factory */
+                    services.service_factory(
+                        |cmd: &OperationObj, arg: &Vec<(usize, String)>, info: &AgentInfo| {
+                            Ok({
+                                AgentCommand {
+                                    cmd: cmd.to_owned(),
+                                    arg: arg.clone(),
+                                    info: info.clone(),
+                                }
+                            })
+                        },
+                    );
+                    //extract injected structure
+                    let provider = services.provider();
+                    let Ok(cmd_to_server) = provider.get::<AgentCommand>() else {
                                 println!("error while resolvig command!");
                                 return Err(ProcessingErrors::ErrorDeserialization)
                             };
-            //resolve command and inject into server command
-            println!("command is [{:?}]", cmd_to_server.cmd);
-            // provide behaviour
+                    //resolve command and inject into server command
+                    println!("command is [{:?}]", cmd_to_server.cmd);
+                    // provide behaviour
 
-            let cmd_server_transform: ServerCommand = (*cmd_to_server).clone().into();
-            match cmd_to_server.cmd {
-                OperationObj::InitializeGame => {
-                    println!("PUBLISHING COMMAND TO AUTH SERVER");
-                    client
-                        .publish(
-                            "auth_processor",
-                            QoS::AtLeastOnce,
-                            false,
-                            serde_json::to_vec(&cmd_server_transform).unwrap(),
-                        )
-                        .await
-                        .unwrap();
+                    let cmd_server_transform: ServerCommand = (*cmd_to_server).clone().into();
+                    match cmd_to_server.cmd {
+                        OperationObj::InitializeGame => {
+                            println!("PUBLISHING COMMAND TO AUTH SERVER");
+                            client
+                                .publish(
+                                    "auth_processor",
+                                    QoS::AtLeastOnce,
+                                    false,
+                                    serde_json::to_vec(&cmd_server_transform).unwrap(),
+                                )
+                                .await
+                                .unwrap();
+                        }
+                        OperationObj::Play(_) => todo!(),
+                        OperationObj::Test => todo!(),
+                        OperationObj::Dgb => todo!(),
+                        _ => todo!(),
+                    }
                 }
-                OperationObj::Play => todo!(),
+                // PLAY
+                OperationObj::Play(token) => {
+                    // now playing!
+                    // check token and gameid
+
+                    let req_uname = d.get_name();
+                    let token = token;
+                    let gameid = d.get_gameid();
+                    println!("requested name {}, {}, {}", req_uname, token, gameid);
+                    let key_for_this_user = db.get_key_for_user(req_uname);
+                    let Some(restored_key) = key_for_this_user else {
+                        println!("no such user in database!");
+                        return Err(ProcessingErrors::ErrorResolvingCommand);
+                    };
+                    if let Ok(_claim) = restored_key.verify_token::<NoCustomClaims>(&token, None) {
+                        println!("TOKEN VALIDATION FOR USER {} PASSED!, PROCEED", req_uname);
+                        //-----------------------
+                        // add logic to publish further to gameserver
+                        //-----------------------
+                    } else {
+                        println!("TOKEN VALIDATION FOR USER {} NOT PASSED!", req_uname);
+                    }
+
+                    //                     let claims = key.verify_token::<NoCustomClaims>(&token, None)?;
+                }
                 OperationObj::Test => todo!(),
                 OperationObj::Dgb => todo!(),
                 _ => todo!(),

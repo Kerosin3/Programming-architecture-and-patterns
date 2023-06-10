@@ -56,7 +56,7 @@ pub(crate) struct InitializedGames(BTreeMap<isize, Vec<String>>, isize);
 impl InitializedGames {
     pub fn initialize_game(&mut self, usernames: Vec<String>) -> Option<()> {
         println!(
-            "registering game id = [{}] with users {:?}",
+            "[registering game id = [{}] with users {:?}]",
             self.1, usernames
         );
         self.0.insert(self.1, usernames);

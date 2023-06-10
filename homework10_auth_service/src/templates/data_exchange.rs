@@ -86,12 +86,12 @@ pub mod recv_interface {
 
 //------------------------------------------------
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum OperationObj {
     //     Auth,
     InitializeGame,
-    Play,
+    Play(String),
     Test,
     Dgb,
 }
@@ -106,8 +106,8 @@ impl OperationObj {
     pub fn create_test(_str: String) -> Self {
         OperationObj::Test
     }
-    pub fn create_play() -> Self {
-        OperationObj::Play
+    pub fn send_play_command(token: String) -> Self {
+        OperationObj::Play(token)
     }
 }
 //https://github.com/EYHN/ddi.git

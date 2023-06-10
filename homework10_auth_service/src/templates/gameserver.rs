@@ -69,7 +69,7 @@ impl std::convert::From<OperationObj> for GameServerCommands {
     fn from(value: OperationObj) -> Self {
         match value {
             OperationObj::InitializeGame => GameServerCommands::SrvGameInit,
-            OperationObj::Play => GameServerCommands::SrvPlay,
+            OperationObj::Play(_) => GameServerCommands::SrvPlay,
             OperationObj::Test => GameServerCommands::SrvTest,
             OperationObj::Dgb => GameServerCommands::SrvDbg,
             _ => GameServerCommands::SrvRotateObject,
