@@ -59,9 +59,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     task::spawn(async move {
         let data_to_send_transformed = initialize_game(config.agent_settings.name);
         publish(&client2, &bridge2, &data_to_send_transformed).await;
+        println!("SENT REQUEST FOR GAME INIT");
         time::sleep(Duration::from_millis(100)).await;
     });
-
     //--------------------------
     // wait till game initializes
     //--------------------------
@@ -148,6 +148,7 @@ pub fn send_game_command(username: &str, token: String, gameid: isize) -> Vec<u8
         .assign_dbg(1_isize)
         // select operation from Object
         .assign_operation(OperationObj::send_play_command(token));
+    println!("SENDING SOME GAMECOMMAND!");
     data_to_send.transform_to_send()
 }
 
