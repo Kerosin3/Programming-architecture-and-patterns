@@ -199,7 +199,7 @@ async fn deserialize_player_agent_msg(
     client: &AsyncClient,
     db: &AuthUsersDB,
 ) -> Result<(), ProcessingErrors> {
-    let recv_data = RecvWrapper::<usize>::deserialize_data(&published);
+    let recv_data = RecvWrapper::<usize>::deserialize_data(published);
     match recv_data {
         Ok(d) => {
             //black magic

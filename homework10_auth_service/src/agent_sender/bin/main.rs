@@ -3,7 +3,7 @@ use figment::{
     providers::{Env, Format, Toml},
     Figment,
 };
-use rumqttc::{AsyncClient, Event, Incoming, MqttOptions, Packet, QoS};
+use rumqttc::{AsyncClient, Event, Incoming, MqttOptions, QoS};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::path::PathBuf;
@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //dbg!(config);
     // setup mtqq broker
     let mut subscribes = config.agent_settings.subscribes.to_owned();
-    let agent_name = config.agent_settings.name.to_owned();
+    let _agent_name = config.agent_settings.name.to_owned();
     subscribes.reverse();
     let bridge_processor = subscribes.pop().unwrap(); //get topic
     let auth_service_processor = subscribes.pop().unwrap();
@@ -73,7 +73,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     continue;
                 };
                 // skip not ours tokens. ohh.....
-                if &recv_auth_data.username != &username {
+                if recv_auth_data.username != username {
                     continue;
                 }
                 let token = recv_auth_data.token;
@@ -119,7 +119,7 @@ pub fn initialize_game(agent_username: String) -> Vec<u8> {
     let mut data_to_send = SenderWrapper::default();
     data_to_send = data_to_send
         // setup gameid
-        .assign_gameid(-1 as isize)
+        .assign_gameid(-1_isize)
         .assign_obj_id(-1)
         .assign_name(&agent_username)
         .assign_arg(0, arg0)
@@ -127,7 +127,7 @@ pub fn initialize_game(agent_username: String) -> Vec<u8> {
         .assign_arg(1, arg1)
         .unwrap()
         .assign_timestamp()
-        .assign_dbg(1 as isize)
+        .assign_dbg(1_isize)
         // select operation from Object
         .assign_operation(OperationObj::InitializeGame);
     data_to_send.transform_to_send()
@@ -145,7 +145,7 @@ pub fn send_game_command(username: &str, token: String, gameid: isize) -> Vec<u8
         //.assign_arg(1, arg1)
         //.unwrap()
         .assign_timestamp()
-        .assign_dbg(1 as isize)
+        .assign_dbg(1_isize)
         // select operation from Object
         .assign_operation(OperationObj::send_play_command(token));
     data_to_send.transform_to_send()

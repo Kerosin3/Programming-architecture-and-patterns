@@ -15,7 +15,7 @@ impl AuthUsersDB {
             None
         } else {
             let key_bytes = &self.0.get(username).unwrap().key;
-            Some(HS256Key::from_bytes(&key_bytes))
+            Some(HS256Key::from_bytes(key_bytes))
         }
     }
 }

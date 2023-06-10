@@ -19,6 +19,9 @@
 ## Run example
 1. run MTQQ Broker on 1883 port !!!!
 2. run example main bridge processor agent ``agent_processor``
-3. run gameserver agent ``agent_gameserver``
+3. run auth srvice agent ``agent_gameserver``
 4. run example agent player ``agent_sender``
-5. examime ``agent_gameserver`` output to receiver data containitg command with prefix ``Srv``
+5. examime ``agent_auth`` program output to have 3 messager containig ``recording token and key for user...``
+6. examing ``agent_sender`` program output to have message containing ``accepted token for user...``
+7. examing ``agent_processor`` program output to have 3 messages containing ``[[[ added user * to bridge database ]]]``,
+one message with  ``TOKEN VALIDATION FOR USER .... PASSED, PROCEED``

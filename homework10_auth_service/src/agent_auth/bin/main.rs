@@ -5,7 +5,7 @@ use figment::{
 };
 use rumqttc::{AsyncClient, Event, MqttOptions, Packet, QoS};
 use serde::Deserialize;
-use std::collections::BTreeMap;
+
 use std::default::Default;
 use std::error::Error;
 use std::path::PathBuf;
@@ -14,8 +14,7 @@ use templates::auth::*;
 use templates::gameserver::{GameServerCommands, ServerCommand};
 mod implements;
 use implements::*;
-use jwt_simple::prelude::*;
-use std::sync::Arc;
+
 //-------------------------------------------
 //-------------------------------------------
 #[tokio::main(flavor = "current_thread")]
@@ -121,12 +120,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 // implement generator
+#[derive(Default)]
 struct AuthMessageWrapper(AuthMessage, isize);
-impl Default for AuthMessageWrapper {
-    fn default() -> Self {
-        Self(Default::default(), 0)
-    }
-}
+
 impl GeneratorAuth for AuthMessageWrapper {
     fn gen_key(&mut self) {
         self.0.generate_key();
@@ -152,7 +148,7 @@ impl GeneratorAuth for AuthMessageWrapper {
     }
 
     fn set_username(&mut self, name: String) {
-        self.0.username = name.to_owned();
+        self.0.username = name;
     }
 }
 

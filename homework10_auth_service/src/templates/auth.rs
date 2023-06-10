@@ -46,7 +46,7 @@ impl AuthMessage {
     pub fn generate_token(&mut self) {
         let claims = Claims::create(Duration::from_hours(2));
         let key = self.key.as_ref();
-        let token = HS256Key::from_bytes(&key).authenticate(claims).unwrap();
+        let token = HS256Key::from_bytes(key).authenticate(claims).unwrap();
         self.token = token;
     }
     pub fn assign_status_ok(&mut self, id: isize) {
