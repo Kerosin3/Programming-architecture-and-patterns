@@ -141,7 +141,7 @@ impl<T: CmdProcessor> Schema<T> {
                 let r = cmd.execute();
                 self.processor
                     .process(r, &mut self.log, self.log_enabled, &cur_cmd);
-                //                 self.log_enabled = false;
+                self.log_enabled = false;
             }
             //write log if it is neccessary
             self.processor

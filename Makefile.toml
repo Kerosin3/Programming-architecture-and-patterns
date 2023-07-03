@@ -1,5 +1,5 @@
 [env]
 CARGO_MAKE_WORKSPACE_EMULATION = true
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
-CARGO_MAKE_CRATE_WORKSPACE_MEMBERS = ["homework10_auth_service"]
+CARGO_MAKE_CRATE_WORKSPACE_MEMBERS = ["homework4_error_processing_v2"]
 	#"homework1_unittests","homework2_mocking","homework3_command"

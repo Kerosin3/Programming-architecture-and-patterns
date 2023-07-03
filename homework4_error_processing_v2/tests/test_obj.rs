@@ -58,7 +58,7 @@ fn test_log_init_and_write() {
     println!("NO ERRORS -> EMPTY LOG!");
 }
 #[test]
-fn test_repeat_command() {
+fn test_repeat_command_no_errors() {
     use ok_setup::SpaceShip;
     let spaceship = SpaceShip::new();
     let ps = SpaceShip::init(spaceship);
@@ -73,7 +73,7 @@ fn test_repeat_command() {
     schema.push_cmd(Box::new(rcommand));
     assert!(schema.perform_all().is_ok());
     schema.print_log();
-    assert!(schema.test_log_emptiness()); // repeat
+    assert!(schema.test_log_emptiness()); // no errors - no repeats
     println!("REPEATS ON, NO ERRORS -> EMPTY LOG -> NO REPEATS!");
 }
 mod err_setup {
@@ -123,7 +123,7 @@ mod err_setup {
         schema.push_cmd(Box::new(rcommand));
         assert!(schema.perform_all().is_ok());
         schema.print_log();
-        assert!(!schema.test_log_emptiness());
+        assert!(!schema.test_log_emptiness()); // erros -> log is not empty, repeats are working
         println!("ERRORS -> NOT EMPTY LOG, REPEATS ON!");
     }
 }
