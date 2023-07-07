@@ -2,7 +2,7 @@
 
 ## Диаграмма
 
-![](https://github.com/Kerosin3/Programming-architecture-and-patterns/blob/homework13_microservices_arch/cargo-make/diagr.png)
+![](https://github.com/Kerosin3/Programming-architecture-and-patterns/blob/cargo-make/homework13_microservices_arch/diagr.png)
 
 
 ## Узкие места и потенциальные проблемы масштабирования
